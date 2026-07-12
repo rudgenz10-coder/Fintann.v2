@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinKu - Manajemen Keuangan Pribadi</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="asset/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <main class="app-container">
+        
+        <section id="tab-dashboard" class="tab-content active">
+            <div class="slider-container">
+                <img src="asset/img/1.jpg" class="slide-img active" alt="Promo 1">
+                <img src="asset/img/2.jpg" class="slide-img" alt="Promo 2">
+                <img src="asset/img/3.jpg" class="slide-img" alt="Promo 3">
+                <img src="asset/img/4.jpg" class="slide-img" alt="Promo 4">
+                <img src="asset/img/5.jpg" class="slide-img" alt="Promo 5">
+                <img src="asset/img/6.jpg" class="slide-img" alt="Promo 6">
+                <img src="asset/img/7.jpg" class="slide-img" alt="Promo 7">
+                <img src="asset/img/8.jpg" class="slide-img" alt="Promo 8">
+                <img src="asset/img/9.jpg" class="slide-img" alt="Promo 9">
+                
+                <div class="slider-quotes">
+                    <p>"Atur uangmu, atau uang yang akan mengaturmu."</p>
+                </div>
+            </div>
+
+            <div class="overlap-card-zone">
+                <div class="account-card" id="account-swipe-zone">
+                  <button onclick="window.slideWallet('prev')" style="background: none; border: none; color: rgba(255,255,255,0.7); padding: 12px 6px; cursor: pointer; z-index: 10; font-size: 14px;">
+                        <i class="fa-solid fa-chevron-left"></i>
+                  </button>
+
+                    <div class="account-left-side">
+                        <div class="account-icon-wrapper" onclick="ui.openModal('modal-dompet')" style="cursor: pointer;" title="Tambah Dompet Baru">
+                            <i class="fa-solid fa-wallet"></i>
+                        </div>
+
+                        <div class="account-main-text" style="position: relative; width: 100%;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                                <p id="nama-rekening" style="margin: 0;">Loading...</p>
+                                
+                                <div style="position: relative; display: inline-block;">
+                                    <button onclick="toggleWalletMenu(event)" style="background: none; border: none; color: white; opacity: 0.8; font-size: 16px; padding: 0 5px; cursor: pointer;">
+                                        <i class="fa-solid fa-ellipsis-vertical"></i>
+                                    </button>
+                                    <div id="wallet-action-menu" style="display: none; position: absolute; right: 0; top: 25px; background: white; border-radius: 12px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); z-index: 100; min-width: 120px; overflow: hidden;">
+                                        <button onclick="openEditWalletModal()" style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 12px 16px; border: none; background: none; text-align: left; font-size: 13px; font-weight: 500; color: #333; cursor: pointer;">
+                                            <i class="fa-solid fa-pen" style="color: #666; font-size: 12px;"></i> Edit Nama
+                                        </button>
+                                        <button onclick="app.deleteData('dompet', app.accounts[app.activeAccountIndex]?.id)" style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 12px 16px; border: none; background: #fff5f5; text-align: left; font-size: 13px; font-weight: 500; color: #e53935; cursor: pointer;">
+                                            <i class="fa-solid fa-trash" style="color: #e53935; font-size: 12px;"></i> Hapus
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="saldo-row" style="margin-top: 4px;">
+                                <h2 id="total-saldo" data-real-value="Rp 0">Rp 0</h2>
+                                <button class="btn-toggle-eye" onclick="togglePrivacySaldo()"><i id="eye-icon" class="fa-solid fa-eye"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                  <button onclick="window.slideWallet('next')" style="background: none; border: none; color: rgba(255,255,255,0.7); padding: 12px 6px; cursor: pointer; z-index: 10; font-size: 14px;">
+                        <i class="fa-solid fa-chevron-right"></i>
+                  </button>
+
+                </div>
+            </div>
+
+            <div class="content-wrapper">
+                <div class="balance-summary-box">
+                    <div class="summary-item in">
+                        <div class="sum-icon"><i class="fa-solid fa-circle-arrow-down"></i></div>
+                        <div class="sum-text">
+                            <span>Total Masuk</span>
+                            <strong id="dash-pemasukan">Rp 0</strong>
+                        </div>
+                    </div>
+                    <div class="summary-item out">
+                        <div class="sum-icon"><i class="fa-solid fa-circle-arrow-up"></i></div>
+                        <div class="sum-text">
+                            <span>Total Keluar</span>
+                            <strong id="dash-pengeluaran"> 0</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="quick-scroll-group">
+                    <h4 class="quick-title">Tambah Pemasukan</h4>
+                    <div class="scroll-row" id="quick-income-list"></div>
+                </div>
+
+                <div class="quick-scroll-group" style="margin-top: 18px;">
+                    <h4 class="quick-title">Tambah Pengeluaran</h4>
+                    <div class="scroll-row" id="quick-expense-list"></div>
+                </div>
+
+                <div class="section-header" style="margin-top: 24px;">
+                    <h3>5 Transaksi Terakhir</h3>
+                    <span class="view-all-link" onclick="document.getElementById('nav-tx').click()">Lihat Semua</span>
+                </div>
+                <div class="list-container" id="list-transaksi-limit"></div>
+
+                <div class="card" style="margin-top: 24px;">
+                    <h3>Grafik Analisis</h3>
+                    <div class="chart-container">
+                        <canvas id="financeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="tab-transaksi" class="tab-content" style="padding: 0; background: var(--bg-app);">
+    <div class="chart-section-wrapper" style="width: 100%; padding: 0; background: var(--bg-card);">
+    <div class="chart-scroll-wrapper">
+        <div class="chart-scroll-inner" id="chart-inner-container">
+            <canvas id="transactionPageChart"></canvas>
+        </div>
+    </div>
+    
+    <div class="month-slider-navigation" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 16px;">
+        </div>
+</div>
+
+
+    <div class="tx-content-scroll" style="padding: 16px; background: var(--bg-primary); border-radius: 24px 24px 0 0; margin-top: -20px; position: relative; z-index: 10; min-height: 55vh;">
+        
+        <div style="display: flex; gap: 10px; margin-bottom: 16px;">
+            <div style="flex: 1; background: rgba(76, 175, 80, 0.1); padding: 12px; border-radius: 12px; text-align: center; border: 1px solid rgba(76, 175, 80, 0.15);">
+                <span style="font-size: 11px; color: #4caf50; display: block; font-weight: 600;">Total Masuk</span>
+                <strong id="tx-rekap-income" style="font-size: 15px; color: #4caf50;">Rp 0</strong>
+            </div>
+            <div style="flex: 1; background: rgba(244, 67, 54, 0.1); padding: 12px; border-radius: 12px; text-align: center; border: 1px solid rgba(244, 67, 54, 0.15);">
+                <span style="font-size: 11px; color: #f44336; display: block; font-weight: 600;">Total Keluar</span>
+                <strong id="tx-rekap-expense" style="font-size: 15px; color: #f44336;">Rp 0</strong>
+            </div>
+        </div>
+
+        <div class="month-slider-navigation" style="display: flex; align-items: center; justify-content: space-between; margin-top: 15px; background: var(--bg-primary); padding: 10px 16px; border-radius: 14px;">
+          <span id="tx-month-label" style="font-weight: 800; font-size: 15px; color: var(--text-main);">Januari 2026</span>
+    <div style="display: flex; gap: 10px;">
+        <button onclick="ui.changeTxMonth(-1)" style="background: var(--primary-light); border: none; color: var(--primary); padding: 8px 12px; border-radius: 8px; cursor: pointer;">
+            <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <button onclick="ui.changeTxMonth(1)" style="background: var(--primary-light); border: none; color: var(--primary); padding: 8px 12px; border-radius: 8px; cursor: pointer;">
+            <i class="fa-solid fa-chevron-right"></i>
+        </button>
+    </div>
+        </div>
+
+        <div id="tx-grouped-history-container"></div>
+    </div>
+</section>
+
+
+        <section id="tab-dompet" class="tab-content">
+            <div class="section-header" style="padding: 16px 16px 0 16px; display: flex; justify-content: space-between; align-items: center;">
+                <h2>Kelola Dompet</h2>
+                <button class="btn btn-primary" onclick="ui.openModal('modal-dompet')">+ Dompet Baru</button>
+            </div>
+          <div class="category-filter-bar" style="display: flex; gap: 8px; padding: 12px 16px;">
+    <button class="filter-pill" id="filter-cat-all" onclick="window.filterCategoryList('all')" style="flex: 1; padding: 8px; border: 1px solid var(--primary); background: var(--primary); color: #ffffff; border-radius: 20px; font-size: 11px; font-weight: 600; cursor: pointer;">Semua</button>
+    <button class="filter-pill" id="filter-cat-income" onclick="window.filterCategoryList('income')" style="flex: 1; padding: 8px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-muted); border-radius: 20px; font-size: 11px; font-weight: 600; cursor: pointer;">Pemasukan</button>
+    <button class="filter-pill" id="filter-cat-expense" onclick="window.filterCategoryList('expense')" style="flex: 1; padding: 8px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-muted); border-radius: 20px; font-size: 11px; font-weight: 600; cursor: pointer;">Pengeluaran</button>
+</div>
+
+            <div class="list-container" id="list-dompet" style="padding: 16px;"></div>
+        </section>
+
+        <section id="tab-utang" class="tab-content">
+            <div class="section-header" style="padding: 16px 16px 0 16px; display: flex; justify-content: space-between; align-items: center;">
+                <h2>Utang & Piutang</h2>
+                <button class="btn btn-primary" onclick="ui.openModal('modal-utang')">+ Catatan Baru</button>
+            </div>
+            <div style="padding: 16px;">
+                <div id="list-utang"></div>
+            </div>
+        </section> 
+
+        <section id="tab-kategori" class="tab-content">
+            <div class="section-header" style="padding: 16px 16px 0 16px; display: flex; justify-content: space-between; align-items: center;">
+                <h2>Kelola Kategori</h2>
+                <button class="btn btn-primary" onclick="openModalKategori()">+ Kategori Baru</button>
+            </div>
+          <div class="category-filter-bar" style="display: flex; gap: 8px; margin: 12px 16px;">
+    <button onclick="window.setCategoryFilter('all')" id="btn-cat-all" style="flex:1; padding:10px; border-radius:12px; border:1px solid var(--primary); background: var(--primary); color: white; font-weight: 600; font-size: 13px;">Semua</button>
+    <button onclick="window.setCategoryFilter('income')" id="btn-cat-income" style="flex:1; padding:10px; border-radius:12px; border:1px solid var(--border); background: white; color: var(--text-main); font-weight: 600; font-size: 13px;">Pemasukan</button>
+    <button onclick="window.setCategoryFilter('expense')" id="btn-cat-expense" style="flex:1; padding:10px; border-radius:12px; border:1px solid var(--border); background: white; color: var(--text-main); font-weight: 600; font-size: 13px;">Pengeluaran</button>
+</div>
+
+          
+            <div class="list-container" id="list-kategori" style="padding: 16px;"></div>
+        </section>
+
+    </main>
+
+    <nav class="bottom-nav">
+        <div class="nav-item active" onclick="ui.switchTab('dashboard', this)">
+          <div class="nav-icon-container">
+            <i class="fa-solid fa-house"></i>        
+          </div>
+            <span>Home</span>
+        </div>
+        <div class="nav-item" id="nav-tx" onclick="ui.switchTab('transaksi', this)">
+          <div class="nav-icon-container">
+            <i class="fa-solid fa-chart-simple"></i>
+          </div>
+            <span>Riwayat</span>
+        </div>
+        <div class="nav-item" onclick="ui.switchTab('utang', this)">
+          <div class="nav-icon-container">
+            <i class="fa-solid fa-hand-holding-dollar"></i>
+          </div>
+            <span>Utang</span>
+        </div>
+        <div class="nav-item" onclick="ui.switchTab('kategori', this)">
+          <div class="nav-icon-container">
+            <i class="fa-solid fa-tags"></i>
+          </div>
+            <span>Kategori</span>
+        </div>
+    </nav>
+
+    <div id="toast-container" style="position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); z-index: 10000; pointer-events: none;"></div>
+
+
+    <div id="modal-dompet" class="modal-backdrop" onclick="if(event.target===this) ui.closeModal('modal-dompet')">
+        <div class="modal-card">
+            <h3>Tambah Dompet Baru</h3>
+            <form id="form-dompet" onsubmit="ui.handleFormSubmit(event, 'dompet')">
+                <div class="form-group">
+                    <label>NAMA DOMPET</label>
+                    <input type="text" id="wallet-name" placeholder="Misal: Kantong Utama, Tabungan" required>
+                </div>             
+                <div style="display:flex; gap:10px; justify-content:flex-end; margin-top: 20px;">
+                    <button type="button" onclick="ui.closeModal('modal-dompet')" style="padding:10px 16px; border-radius:10px; border:none; background:#eee; font-weight:600;">Batal</button>
+                    <button type="submit" style="padding:10px 16px; border-radius:10px; border:none; background:var(--primary); color:white; font-weight:600;">Simpan</button>
+                </div>
+              <input type="hidden" id="edit-wallet-id">
+            </form>
+        </div>
+    </div>
+
+        <div id="modal-transaksi" class="modal-backdrop" onclick="if(event.target===this) ui.closeModal('modal-transaksi')">
+        <div class="modal-card">
+            <h3>Catat Transaksi</h3>
+            <form id="form-transaksi" onsubmit="ui.handleFormSubmit(event, 'transaksi')">
+    
+    <input type="hidden" id="edit-tx-id">
+
+    <div class="form-group">
+        <label>PILIH DOMPET</label>
+        <select id="tx-account-id" required></select>
+    </div>
+
+    <div class="form-group">
+        <label>JENIS ALIRAN</label>
+        <select id="tx-jenis" required>
+            <option value="expense">Pengeluaran</option>
+            <option value="income">Pemasukan</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>NOMINAL TRANSAKSI (RP)</label>
+        <input type="number" id="tx-nominal" placeholder="Contoh: 25000" required min="1">
+    </div>
+
+    <div class="form-group">
+        <label>KATEGORI TERELASI</label>
+        <select id="tx-keterangan" required></select> 
+    </div>
+
+    <div class="form-group">
+        <label>TANGGAL NOTA</label>
+        <input type="date" id="tx-date" required>
+    </div>
+
+    <div class="form-group">
+        <label>DESKRIPSI CATATAN (OPSIONAL)</label>
+        <input type="text" id="tx-deskripsi-tambahan" placeholder="Tulis rincian deskripsi...">
+    </div>
+
+    <div class="modal-actions" style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 22px;">
+        <button type="button" onclick="ui.closeModal('modal-transaksi')" style="padding: 10px 16px; border-radius: 12px; border:none; background:#eee; font-weight:600; font-size:12px;">Batal</button>
+        <button type="submit" style="padding: 10px 16px; border-radius: 12px; border:none; background: var(--primary); color: white; font-weight: 600; font-size:12px;">Simpan</button>
+    </div>
+</form>
+
+        </div>
+    </div>
+
+
+    <div id="modal-utang" class="modal-backdrop" onclick="if(event.target===this) ui.closeModal('modal-utang')">
+        <div class="modal-card">
+            <h3>Catat Utang / Piutang</h3>
+            <form id="form-utang" onsubmit="ui.handleFormSubmit(event, 'utang')">
+                <div class="form-group">
+                    <label>DOMPET TERKAIT</label>
+                    <select id="utang-account-id" required></select>
+                </div>
+                <div class="form-group">
+                    <label>JENIS</label>
+                    <select id="utang-jenis" required>
+                        <option value="debt">Utang (Saya Berutang)</option>
+                        <option value="receivable">Piutang (Orang Berutang ke Saya)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>NAMA ORANG</label>
+                    <input type="text" id="utang-nama" placeholder="Nama kontak..." required>
+                </div>
+                <div class="form-group">
+                    <label>NOMINAL</label>
+                    <input type="number" id="utang-nominal" placeholder="0" required>
+                </div>
+                <div style="display:flex; gap:10px; justify-content:flex-end; margin-top: 20px;">
+                    <button type="button" onclick="ui.closeModal('modal-utang')" style="padding:10px 16px; border-radius:10px; border:none; background:#eee; font-weight:600;">Batal</button>
+                    <button type="submit" style="padding:10px 16px; border-radius:10px; border:none; background:var(--primary); color:white; font-weight:600;">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="modal-kategori" class="modal-backdrop" onclick="if(event.target===this) ui.closeModal('modal-kategori')">
+        <div class="modal-card" style="max-height: 85vh; overflow-y: auto;">
+            <h3 id="modal-kategori-title">Tambah Kategori</h3>
+            <form id="form-kategori" onsubmit="handleFormKategoriSubmit(event)">
+                <input type="hidden" id="edit-category-id">
+                <input type="hidden" id="cat-icon" value="fa-tags">
+                
+                <div class="form-group">
+                    <label>NAMA KATEGORI</label>
+                    <input type="text" id="cat-name" placeholder="Misal: Jajan, Internet, Kas" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>TIPE KATEGORI</label>
+                    <select id="cat-type" required>
+                        <option value="expense">Pengeluaran</option>
+                        <option value="income">Pemasukan</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>PILIH ICON KATEGORI</label>
+                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 10px;">
+                        <div id="selected-icon-preview" style="width: 46px; height: 46px; background: var(--primary-light); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px;">
+                            <i class="fa-solid fa-tags"></i>
+                        </div>
+                        <span style="font-size: 12px; color: var(--text-muted);">Icon yang terpilih saat ini</span>
+                    </div>
+                    
+                    <div id="icon-picker-list" style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; max-height: 150px; overflow-y: auto; background: rgba(0,0,0,0.02); padding: 8px; border-radius: 10px; border: 1px solid rgba(0,0,0,0.05);">
+                    </div>
+                </div>
+
+                <div style="display:flex; gap:10px; justify-content:flex-end; margin-top: 24px;">
+                    <button type="button" onclick="ui.closeModal('modal-kategori')" style="padding:10px 16px; border-radius:10px; border:none; background:#eee; font-weight:600;">Batal</button>
+                    <button type="submit" style="padding:10px 16px; border-radius:10px; border:none; background:var(--primary); color:white; font-weight:600;">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+  <div id="modal-struk" class="modal-backdrop">
+    <div class="modal-card" style="border-radius: 16px; background: #ffffff; padding: 20px; max-width: 340px; margin: auto;">
+        <div id="receipt-content">
+            </div>
+        <button type="button" onclick="ui.closeModal('modal-struk')" style="width: 100%; margin-top: 18px; background: var(--primary); color: white; padding: 10px; border-radius: 10px; border: none; font-weight: 600; font-size: 12px; cursor: pointer;">Tutup Nota Resi</button>
+    </div>
+</div>
+
+  <div id="modal-transaksi" class="modal-backdrop">
+    <div class="modal-card" style="border-radius: 20px; padding: 20px; background: var(--bg-card);">
+        <h3 style="color: var(--text-main); font-weight: 700; margin-bottom: 16px;">Tambah Transaksi</h3>
+        <form id="form-tambah-transaksi" onsubmit="event.preventDefault(); app.submitQuickTransaction();">
+            <input type="hidden" id="tx-jenis">
+            <input type="hidden" id="tx-kategori-name">
+            
+            <div style="margin-top:12px;">
+                <label style="font-size:13px; color:var(--text-muted); font-weight:500;">Pilih Dompet</label>
+                <select id="tx-wallet-select" style="width:100%; padding:12px; border-radius:12px; border:1px solid var(--border); margin-top:6px; background:var(--bg-card); color:var(--text-main);" required></select>
+            </div>
+            <div style="margin-top:12px;">
+                <label style="font-size:13px; color:var(--text-muted); font-weight:500;">Jumlah (Rp)</label>
+                <input type="number" id="tx-amount" style="width:100%; padding:12px; border-radius:12px; border:1px solid var(--border); margin-top:6px; background:var(--bg-card); color:var(--text-main);" required placeholder="0">
+            </div>
+            <div style="margin-top:12px;">
+                <label style="font-size:13px; color:var(--text-muted); font-weight:500;">Deskripsi</label>
+                <input type="text" id="tx-desc" style="width:100%; padding:12px; border-radius:12px; border:1px solid var(--border); margin-top:6px; background:var(--bg-card); color:var(--text-main);" placeholder="Catatan transaksi">
+            </div>
+            <div style="margin-top:12px;">
+                <label style="font-size:13px; color:var(--text-muted); font-weight:500;">Tanggal</label>
+                <input type="date" id="tx-date" style="width:100%; padding:12px; border-radius:12px; border:1px solid var(--border); margin-top:6px; background:var(--bg-card); color:var(--text-main);" required>
+            </div>
+            <div style="display:flex; gap:10px; justify-content:flex-end; margin-top: 24px;">
+                <button type="button" onclick="ui.closeModal('modal-transaksi')" style="padding:12px 20px; border-radius:12px; border:none; background:#eee; font-weight:600; color:#555;">Batal</button>
+                <button type="submit" style="padding:12px 20px; border-radius:12px; border:none; background:var(--primary); color:white; font-weight:600;">Simpan</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="modal-edit-dompet" class="modal-backdrop">
+    <div class="modal-card" style="border-radius: 20px; padding: 20px; background: var(--bg-card);">
+        <h3 style="color: var(--text-main); font-weight: 700; margin-bottom: 16px;">Edit Dompet</h3>
+        <form id="form-edit-dompet" onsubmit="event.preventDefault(); app.saveEditedWallet();">
+            <div>
+                <label style="font-size:13px; color:var(--text-muted); font-weight:500;">Nama Dompet</label>
+                <input type="text" id="edit-wallet-name" style="width:100%; padding:12px; border-radius:12px; border:1px solid var(--border); margin-top:6px; background:var(--bg-card); color:var(--text-main);" required>
+            </div>
+            <div style="margin-top:12px;">
+                <label style="font-size:13px; color:var(--text-muted); font-weight:500;">Saldo Saat Ini (Rp)</label>
+                <input type="number" id="edit-wallet-balance" style="width:100%; padding:12px; border-radius:12px; border:1px solid var(--border); margin-top:6px; background:var(--bg-card); color:var(--text-main);" required>
+            </div>
+            <div style="display:flex; gap:10px; justify-content:flex-end; margin-top: 24px;">
+                <button type="button" onclick="ui.closeModal('modal-edit-dompet')" style="padding:12px 20px; border-radius:12px; border:none; background:#eee; font-weight:600; color:#555;">Batal</button>
+                <button type="submit" style="padding:12px 20px; border-radius:12px; border:none; background:var(--primary); color:white; font-weight:600;">Simpan Perubahan</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="modal-edit-transaksi" class="modal-backdrop">
+    <div class="modal-card" style="border-radius: 20px; padding: 20px; background: var(--bg-card);">
+        <h3 style="color: var(--text-main); font-weight: 700; margin-bottom: 16px;">Edit Transaksi</h3>
+        <form id="form-edit-transaksi" onsubmit="event.preventDefault(); app.saveEditedTransaction();">
+            <input type="hidden" id="edit-tx-id">
+            <div>
+                <label style="font-size:13px; color:var(--text-muted); font-weight:500;">Pilih Dompet</label>
+                <select id="edit-tx-wallet" style="width:100%; padding:12px; border-radius:12px; border:1px solid var(--border); margin-top:6px; background:var(--bg-card); color:var(--text-main);"></select>
+            </div>
+            <div style="margin-top:12px;">
+                <label style="font-size:13px; color:var(--text-muted); font-weight:500;">Jenis</label>
+                <select id="edit-tx-jenis" onchange="window.updateEditModalCategoryOptions()" style="width:100%; padding:12px; border-radius:12px; border:1px solid var(--border); margin-top:6px; background:var(--bg-card); color:var(--text-main);">
+                    <option value="income">Pemasukan</option>
+                    <option value="expense">Pengeluaran</option>
+                </select>
+            </div>
+            <div style="margin-top:12px;">
+                <label style="font-size:13px; color:var(--text-muted); font-weight:500;">Jumlah (Rp)</label>
+                <input type="number" id="edit-tx-amount" style="width:100%; padding:12px; border-radius:12px; border:1px solid var(--border); margin-top:6px; background:var(--bg-card); color:var(--text-main);" required>
+            </div>
+            <div style="margin-top:12px;">
+                <label style="font-size:13px; color:var(--text-muted); font-weight:500;">Kategori</label>
+                <select id="edit-tx-kategori" style="width:100%; padding:12px; border-radius:12px; border:1px solid var(--border); margin-top:6px; background:var(--bg-card); color:var(--text-main);"></select>
+            </div>
+            <div style="margin-top:12px;">
+                <label style="font-size:13px; color:var(--text-muted); font-weight:500;">Deskripsi</label>
+                <input type="text" id="edit-tx-desc" style="width:100%; padding:12px; border-radius:12px; border:1px solid var(--border); margin-top:6px; background:var(--bg-card); color:var(--text-main);">
+            </div>
+            <div style="margin-top:12px;">
+                <label style="font-size:13px; color:var(--text-muted); font-weight:500;">Tanggal</label>
+                <input type="date" id="edit-tx-date" style="width:100%; padding:12px; border-radius:12px; border:1px solid var(--border); margin-top:6px; background:var(--bg-card); color:var(--text-main);" required>
+            </div>
+            <div style="display:flex; gap:10px; justify-content:flex-end; margin-top: 24px;">
+                <button type="button" onclick="ui.closeModal('modal-edit-transaksi')" style="padding:12px 20px; border-radius:12px; border:none; background:#eee; font-weight:600; color:#555;">Batal</button>
+                <button type="submit" style="padding:12px 20px; border-radius:12px; border:none; background:var(--primary); color:white; font-weight:600;">Simpan</button>
+            </div>
+        </form>
+    </div>
+</div> 
+
+    <script src="asset/js/storage.js"></script>
+    <script src="asset/js/app.js"></script>
+    <script src="asset/js/ui.js"></script>
+    <script src="asset/js/category.js"></script>
+</body>
+</html>
