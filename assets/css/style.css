@@ -1,0 +1,240 @@
+[x-cloak] {
+    display: none !important;
+}
+
+/* Sembunyikan scrollbar untuk pengalaman mobile */
+.scrollbar-none::-webkit-scrollbar {
+    display: none;
+}
+.scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* ==========================================================
+   SLIDER KUTIPAN
+   Slide aktif ditentukan JS dari jam perangkat (lihat startSlider di
+   AppController.js), jadi tidak mengulang dari awal saat pindah tab.
+   CSS hanya mengatur tampilan dan transisi.
+   ========================================================== */
+.slider-container {
+    position: relative;
+    /* Full-bleed di dalam kolom aplikasi: membatalkan padding p-4 milik <main>.
+       Tidak memakai 100vw supaya tidak muncul scroll horizontal di desktop
+       dan tetap rapi di dalam kolom max-w-md. */
+    width: calc(100% + 32px);
+    margin: -16px -16px 0;
+
+    /* svh = tinggi layar yang stabil saat address bar HP naik/turun */
+    height: clamp(220px, 38vh, 360px);
+    height: clamp(220px, 38svh, 360px);
+
+    background-color: #000;
+    overflow: hidden;
+}
+
+.css-slider-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+/* Slide lama tetap tampil penuh sampai slide baru selesai muncul, lalu
+   menghilang. Dengan begitu tidak ada momen layar menggelap di tengah transisi. */
+.slide-item {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    z-index: 0;
+    transition: opacity 0s linear 0.9s;
+}
+
+.slide-item.is-active {
+    opacity: 1;
+    z-index: 1;
+    transition: opacity 0.9s ease;
+}
+
+.pure-slide-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Gradasi gelap bawah agar kutipan mudah dibaca */
+.slider-container::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 60%;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.75) 0%, rgba(0, 0, 0, 0) 100%);
+    z-index: 2;
+    pointer-events: none;
+}
+
+/* bottom = 45px (bagian slider yang ditutup kartu saldo) + 15px jarak napas.
+   Sebelumnya 31px sehingga baris terakhir kutipan tertutup kartu. */
+.slider-quotes {
+    position: absolute;
+    left: 20px;
+    right: 20px;
+    bottom: 60px;
+    z-index: 3;
+}
+
+.slider-quotes p {
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 500;
+    font-style: italic;
+    line-height: 1.45;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+    margin: 0;
+    text-wrap: balance;
+}
+
+/* Hormati pengaturan "kurangi gerakan" di perangkat */
+@media (prefers-reduced-motion: reduce) {
+    .slide-item,
+    .slide-item.is-active {
+        transition: none;
+    }
+}
+
+
+/* 2. Perbaikan Kartu Saldo Overlap */
+.overlap-card-zone {
+    position: relative;
+    z-index: 20;
+    padding: 0 16px;
+    margin-top: -45px;
+}
+
+.account-card {
+    background: linear-gradient(135deg, #800020, #4a0012);
+    color: white;
+    border-radius: 24px;
+    padding: 20px;
+    box-shadow: 0 10px 25px rgba(128, 0, 32, 0.25);
+    display: flex;
+    align-items: center;
+}
+
+.account-left-side {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+}
+
+.account-icon-wrapper {
+    width: 48px;
+    height: 48px;
+    background-color: rgba(255, 255, 255, 0.15);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.account-main-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.saldo-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 4px;
+}
+
+.saldo-row h2 {
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0;
+}
+
+/* Area sentuh 40x40 (sebelumnya sekitar 24px, sulit ditekan di HP) */
+.btn-toggle-eye {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 16px;
+    width: 40px;
+    height: 40px;
+    margin-right: -8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    cursor: pointer;
+}
+
+.btn-toggle-eye:active {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* 3. Konten Wrapper & Tombol Kategori Cepat */
+.content-wrapper {
+    background-color: #fdf2f4;
+    border-top-left-radius: 32px;
+    border-top-right-radius: 32px;
+    position: relative;
+    z-index: 10;
+    padding: 55px 16px 16px 16px;
+    margin-top: -20px;
+}
+
+.balance-summary-box {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.summary-item {
+    flex: 1;
+    background-color: #ffffff;
+    padding: 14px;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border: 1px solid #f3e8eb;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+}
+
+.scroll-row {
+    display: flex;
+    gap: 14px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
+}
+
+.btn-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    min-width: 64px;
+}
+
+.scroll-item {
+    width: 56px;
+    height: 56px;
+    border: none;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 20px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+}
