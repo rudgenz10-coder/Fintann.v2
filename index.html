@@ -1,0 +1,2261 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fintann - Aplikasi Keuangan Pribadi</title>
+    <meta name="color-scheme" content="light dark">
+    <meta name="theme-color" content="#800020">
+    <!-- Terapkan tema sebelum halaman tergambar, supaya tidak berkedip putih saat mode gelap -->
+    <script>
+        (function () {
+            try {
+                var t = localStorage.getItem('finku_theme');
+                var dark = t === 'dark' || ((t === null || t === 'system') && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                if (dark) {
+                    document.documentElement.classList.add('dark');
+                    document.querySelector('meta[name="theme-color"]').setAttribute('content', '#121012');
+                }
+            } catch (e) {}
+        })();
+    </script>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+      <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/dark.css">
+    <link rel="manifest" href="/manifest.json">
+      <!-- Tambahan opsional untuk ikon perangkat Apple/iOS -->
+    <link rel="apple-touch-icon" href="/img/icon-192.png">
+
+</head>
+<body class="bg-gray-50 text-gray-800 pb-24" x-data="AppController()" x-init="init()">
+
+    <!-- KONTEN UTAMA (SPA TABS) -->
+    <main class="max-w-md mx-auto p-4">
+
+<!-- TAB 1: DASHBOARD -->
+<section x-show="activeTab === 'dashboard'" x-cloak class="space-y-6 pb-28 app-bg-h">
+
+    <!-- 1. SLIDER KUTIPAN: slide aktif dihitung dari jam (startSlider), jadi tidak mengulang saat pindah tab -->
+    <!-- alt="" karena gambar hanya dekorasi, kutipan sudah berupa teks. 2 gambar pertama dimuat langsung, sisanya lazy. -->
+    <div class="slider-container" role="region" aria-roledescription="carousel" aria-label="Kutipan inspiratif">
+        <button type="button" class="settings-btn" @click="openSettings()" aria-label="Buka pengaturan"><i class="fa-solid fa-gear"></i></button>
+        <div class="theme-switch" role="group" aria-label="Tampilan aplikasi" :data-active="theme">
+            <span class="theme-thumb" aria-hidden="true"></span>
+            <button type="button" @click="setTheme('light', $event)" :class="{ 'is-active': theme === 'light' }" :aria-pressed="theme === 'light'" aria-label="Terang" title="Terang"><i class="fa-solid fa-sun"></i></button>
+            <button type="button" @click="setTheme('dark', $event)" :class="{ 'is-active': theme === 'dark' }" :aria-pressed="theme === 'dark'" aria-label="Gelap" title="Gelap"><i class="fa-solid fa-moon"></i></button>
+            <button type="button" @click="setTheme('system', $event)" :class="{ 'is-active': theme === 'system' }" :aria-pressed="theme === 'system'" aria-label="Otomatis (ikuti perangkat)" title="Otomatis"><i class="fa-solid fa-circle-half-stroke"></i></button>
+        </div>
+        <div class="theme-toast" :class="{ 'is-visible': themeToast }" role="status" aria-live="polite" x-text="themeToast"></div>
+        <div class="css-slider-wrapper">
+            <div class="slide-item" :class="{ 'is-active': sliderIndex === 0 }" :aria-hidden="sliderIndex !== 0">
+                <img src="assets/img/1.jpg" class="pure-slide-img" alt="" decoding="async">
+                <div class="slider-quotes">
+                    <p>🇸🇦 "Kekayaan yang hakiki bukanlah karena banyaknya harta, melainkan kaya jiwa." — Nabi Muhammad SAW</p>
+                </div>
+            </div>
+            <div class="slide-item" :class="{ 'is-active': sliderIndex === 1 }" :aria-hidden="sliderIndex !== 1">
+                <img src="assets/img/2.jpg" class="pure-slide-img" alt="" decoding="async">
+                <div class="slider-quotes">
+                    <p>🇸🇦 "Sebaik-baik harta adalah milik orang saleh." — Nabi Muhammad SAW</p>
+                </div>
+            </div>
+            <div class="slide-item" :class="{ 'is-active': sliderIndex === 2 }" :aria-hidden="sliderIndex !== 2">
+                <img src="assets/img/3.jpg" class="pure-slide-img" alt="" loading="lazy" decoding="async">
+                <div class="slider-quotes">
+                    <p>🇸🇦 "Harta tidak akan berkurang karena sedekah." — Nabi Muhammad SAW</p>
+                </div>
+            </div>
+            <div class="slide-item" :class="{ 'is-active': sliderIndex === 3 }" :aria-hidden="sliderIndex !== 3">
+                <img src="assets/img/4.jpg" class="pure-slide-img" alt="" loading="lazy" decoding="async">
+                <div class="slider-quotes">
+                    <p>🇸🇦 "Tangan di atas lebih baik daripada tangan di bawah." — Nabi Muhammad SAW</p>
+                </div>
+            </div>
+            <div class="slide-item" :class="{ 'is-active': sliderIndex === 4 }" :aria-hidden="sliderIndex !== 4">
+                <img src="assets/img/5.jpg" class="pure-slide-img" alt="" loading="lazy" decoding="async">
+                <div class="slider-quotes">
+                    <p>🇸🇦 "Carilah akhirat, namun jangan lupakan bagianmu di dunia." — Ali bin Abi Thalib</p>
+                </div>
+            </div>
+            <div class="slide-item" :class="{ 'is-active': sliderIndex === 5 }" :aria-hidden="sliderIndex !== 5">
+                <img src="assets/img/6.jpg" class="pure-slide-img" alt="" loading="lazy" decoding="async">
+                <div class="slider-quotes">
+                    <p>🇸🇦 "Kekayaan terbesar adalah rasa cukup (qanaah)." — Ali bin Abi Thalib</p>
+                </div>
+            </div>
+            <div class="slide-item" :class="{ 'is-active': sliderIndex === 6 }" :aria-hidden="sliderIndex !== 6">
+                <img src="assets/img/7.jpg" class="pure-slide-img" alt="" loading="lazy" decoding="async">
+                <div class="slider-quotes">
+                    <p>🇸🇦 "Harta yang paling berkah adalah yang digunakan di jalan kebaikan." — Abu Bakar Ash-Shiddiq</p>
+                </div>
+            </div>
+            <div class="slide-item" :class="{ 'is-active': sliderIndex === 7 }" :aria-hidden="sliderIndex !== 7">
+                <img src="assets/img/8.jpg" class="pure-slide-img" alt="" loading="lazy" decoding="async">
+                <div class="slider-quotes">
+                    <p>🇸🇦 "Bersyukurlah atas rezeki yang sedikit, karena itu awal dari kecukupan." — Imam Al-Ghazali</p>
+                </div>
+            </div>
+            <div class="slide-item" :class="{ 'is-active': sliderIndex === 8 }" :aria-hidden="sliderIndex !== 8">
+                <img src="assets/img/9.jpg" class="pure-slide-img" alt="" loading="lazy" decoding="async">
+                <div class="slider-quotes">
+                    <p>🇸🇦 "Uang adalah alat untuk beribadah, bukan tujuan hidup." — Ibnu Khaldun</p>
+                </div>
+            </div>
+            <div class="slide-item" :class="{ 'is-active': sliderIndex === 9 }" :aria-hidden="sliderIndex !== 9">
+                <img src="assets/img/10.jpg" class="pure-slide-img" alt="" loading="lazy" decoding="async">
+                <div class="slider-quotes">
+                    <p>🇸🇦 "Jangan engkau mengambil harta kecuali dengan cara yang benar." — Umar bin Khattab</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. KARTU SALDO -->
+    <div class="overlap-card-zone px-4">
+        <div class="account-card" id="account-swipe-zone">
+            <div class="account-left-side">
+                <div class="account-icon-wrapper" role="button" tabindex="0" aria-label="Kelola dompet" title="Kelola Dompet"
+                     @click="activeTab = 'wallets'" @keydown.enter="activeTab = 'wallets'" style="cursor: pointer;">
+                    <i class="fa-solid fa-wallet"></i>
+                </div>
+
+                <div class="account-main-text" style="position: relative; width: 100%;">
+                    <div class="flex items-center justify-between w-full">
+
+                        <!-- Nama dompet + panah -->
+                        <div class="flex items-center min-w-0">
+                            <button type="button" x-show="db.accounts.length > 1" aria-label="Dompet sebelumnya"
+                                    @click="activeAccountIndex = (activeAccountIndex > 0 ? activeAccountIndex - 1 : db.accounts.length - 1)"
+                                    class="w-10 h-10 -ml-2 flex items-center justify-center rounded-full text-white/80 text-xs bg-transparent border-none cursor-pointer active:bg-white/20">
+                                <i class="fa-solid fa-chevron-left"></i>
+                            </button>
+                            <p x-text="db.accounts[activeAccountIndex] ? db.accounts[activeAccountIndex].name : 'Belum Ada Dompet'"
+                               class="m-0 text-sm font-semibold tracking-wide truncate max-w-[150px]"></p>
+                            <button type="button" x-show="db.accounts.length > 1" aria-label="Dompet berikutnya"
+                                    @click="activeAccountIndex = (activeAccountIndex < db.accounts.length - 1 ? activeAccountIndex + 1 : 0)"
+                                    class="w-10 h-10 flex items-center justify-center rounded-full text-white/80 text-xs bg-transparent border-none cursor-pointer active:bg-white/20">
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </button>
+                        </div>
+
+                        <!-- Transfer cepat (muncul kalau punya 2 dompet atau lebih) -->
+                        <button type="button" x-show="db.accounts.length > 1" @click="openTransfer(db.accounts[activeAccountIndex]?.id)"
+                                class="h-9 shrink-0 px-3 flex items-center gap-1.5 rounded-full border-none bg-white/20 text-xs font-semibold text-white cursor-pointer active:bg-white/30">
+                            <i class="fa-solid fa-right-left text-[11px]"></i> Transfer
+                        </button>
+                    </div>
+
+                    <!-- Saldo dompet aktif -->
+                    <div class="saldo-row" style="margin-top: 6px;" x-show="db.accounts.length > 0">
+                        <h2 x-text="showSaldo ? formatRupiah(getAccountBalance(db.accounts[activeAccountIndex])) : 'Rp •••••••'"
+                            style="font-size: 24px; font-weight: 700; letter-spacing: -0.5px;">Rp 0</h2>
+                        <button type="button" class="btn-toggle-eye" @click="showSaldo = !showSaldo"
+                                :aria-label="showSaldo ? 'Sembunyikan saldo' : 'Tampilkan saldo'">
+                            <i class="fa-solid" :class="showSaldo ? 'fa-eye' : 'fa-eye-slash'"></i>
+                        </button>
+                    </div>
+
+                    <!-- Total semua dompet -->
+                    <p x-show="db.accounts.length > 1"
+                       x-text="'Total semua dompet: ' + (showSaldo ? formatRupiah(getTotalBalance()) : 'Rp •••••••')"
+                       class="m-0 mt-1 text-xs text-white/80"></p>
+
+                    <!-- Ajakan saat belum ada dompet -->
+                    <button type="button" x-show="db.accounts.length === 0" @click="openModal('modal-add-account')"
+                            class="mt-3 h-11 px-4 rounded-xl border-none bg-white/20 text-sm font-semibold text-white cursor-pointer active:bg-white/30">
+                        <i class="fa-solid fa-plus mr-1.5 text-xs"></i>Tambah dompet
+                    </button>
+
+                    <!-- Indikator titik (area sentuh dibesarkan) -->
+                    <div x-show="db.accounts.length > 1" class="flex items-center mt-1.5">
+                        <template x-for="(acc, index) in db.accounts" :key="acc.id">
+                            <button type="button" @click="activeAccountIndex = index" :aria-label="'Pilih dompet ' + acc.name"
+                                    class="h-6 px-1 flex items-center border-none bg-transparent cursor-pointer">
+                                <span class="block h-1 rounded-full transition-all duration-300"
+                                      :class="activeAccountIndex === index ? 'w-4 bg-white' : 'w-1 bg-white/40'"></span>
+                            </button>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. KONTEN UTAMA -->
+    <div class="px-4 space-y-6">
+
+        <!-- Pengingat backup -->
+        <div x-show="needsBackupReminder()" x-cloak class="rounded-2xl border border-amber-200 bg-amber-50 p-4">
+            <div class="flex items-start gap-3">
+                <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-sm text-amber-600"><i class="fa-solid fa-shield-halved"></i></span>
+                <div class="min-w-0">
+                    <p class="m-0 text-sm font-bold text-neutral-900">Amankan datamu</p>
+                    <p class="m-0 mt-0.5 text-xs leading-relaxed text-neutral-600" x-text="'Backup terakhir: ' + backupStatusText().toLowerCase() + '. Data hanya tersimpan di browser ini dan bisa hilang kalau browser dibersihkan.'"></p>
+                </div>
+            </div>
+            <div class="mt-3 grid grid-cols-2 gap-2.5">
+                <button type="button" @click="snoozeBackup()" class="h-11 rounded-xl border border-amber-200 bg-white text-xs font-bold text-neutral-600 cursor-pointer active:bg-amber-100">Nanti</button>
+                <button type="button" @click="openModal('modal-data')" class="h-11 rounded-xl border-none bg-[#800020] text-xs font-bold text-white cursor-pointer active:bg-[#600018]"><i class="fa-solid fa-cloud-arrow-up mr-1.5"></i>Backup sekarang</button>
+            </div>
+        </div>
+
+        <!-- Ringkasan per dompet -->
+        <div>
+            <div class="flex items-center justify-between mb-2.5">
+                <h4 class="m-0 text-[13px] font-semibold text-neutral-700">Ringkasan</h4>
+                <span x-text="db.accounts[activeAccountIndex]?.name || 'Belum ada dompet'"
+                      class="text-xs font-semibold text-[#800020] bg-[#fdf2f4] px-2.5 py-1 rounded-full max-w-[55%] truncate"></span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div class="bg-white border border-[#f0e6e8] rounded-2xl p-3.5 flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-sm shrink-0">
+                        <i class="fa-solid fa-arrow-down"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <span class="text-xs font-medium text-neutral-500 block">Total Masuk</span>
+                        <strong x-text="formatRupiahShort(getWalletIncome(db.accounts[activeAccountIndex]?.id))"
+                                :title="formatRupiah(getWalletIncome(db.accounts[activeAccountIndex]?.id))"
+                                class="text-sm font-bold text-emerald-600 block">Rp 0</strong>
+                    </div>
+                </div>
+
+                <div class="bg-white border border-[#f0e6e8] rounded-2xl p-3.5 flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-sm shrink-0">
+                        <i class="fa-solid fa-arrow-up"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <span class="text-xs font-medium text-neutral-500 block">Total Keluar</span>
+                        <strong x-text="formatRupiahShort(getWalletExpense(db.accounts[activeAccountIndex]?.id))"
+                                :title="formatRupiah(getWalletExpense(db.accounts[activeAccountIndex]?.id))"
+                                class="text-sm font-bold text-rose-600 block">Rp 0</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Anggaran bulan ini -->
+        <div x-show="getBudgetCategories().length" x-cloak>
+            <div class="flex items-center justify-between mb-2.5">
+                <h4 class="m-0 text-[13px] font-semibold text-neutral-700">Anggaran Bulan Ini</h4>
+                <button type="button" @click="goToCategories()" class="h-9 rounded-lg border-none bg-transparent px-2 text-xs font-bold text-[#800020] cursor-pointer active:bg-[#fdf2f4]">Atur</button>
+            </div>
+            <div class="space-y-3.5 rounded-2xl border border-[#f0e6e8] bg-white p-4">
+                <template x-for="b in getBudgetCategories().slice(0, 3)" :key="b.cat.id">
+                    <div>
+                        <div class="mb-1.5 flex items-center justify-between gap-3 text-xs">
+                            <span class="truncate font-semibold text-neutral-800" x-text="b.cat.name"></span>
+                            <span class="shrink-0 font-bold" :class="b.level === 'over' ? 'text-rose-600' : (b.level === 'warn' ? 'text-amber-600' : 'text-emerald-600')"
+                                  x-text="b.over ? 'Lebih ' + formatRupiahShort(b.spent - b.limit) : 'Sisa ' + formatRupiahShort(b.remaining)"></span>
+                        </div>
+                        <div class="h-2 overflow-hidden rounded-full bg-neutral-100"><div class="h-full rounded-full" :class="b.level === 'over' ? 'bg-rose-500' : (b.level === 'warn' ? 'bg-amber-500' : 'bg-emerald-500')" :style="'width:' + Math.min(b.pct, 100) + '%'"></div></div>
+                        <p class="m-0 mt-1 text-[11px] text-neutral-500" x-text="formatRupiahShort(b.spent) + ' dari ' + formatRupiahShort(b.limit) + ' • ' + b.pct + '%'"></p>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <!-- Target tabungan -->
+        <div x-show="db.goals.length" x-cloak>
+            <div class="flex items-center justify-between mb-2.5">
+                <h4 class="m-0 text-[13px] font-semibold text-neutral-700">Target Tabungan</h4>
+                <button type="button" @click="activeTab = 'wallets'" class="h-9 rounded-lg border-none bg-transparent px-2 text-xs font-bold text-[#800020] cursor-pointer active:bg-[#fdf2f4]">Lihat</button>
+            </div>
+            <div class="space-y-3.5 rounded-2xl border border-[#f0e6e8] bg-white p-4">
+                <template x-for="g in db.goals.slice(0, 2)" :key="g.id">
+                    <button type="button" @click="activeTab = 'wallets'; openGoalSheet(g)" class="block w-full border-none bg-transparent p-0 text-left cursor-pointer">
+                        <span class="mb-1.5 flex items-center justify-between gap-3 text-xs">
+                            <span class="truncate font-semibold text-neutral-800" x-text="g.name"></span>
+                            <span class="shrink-0 font-bold" :class="goalDone(g) ? 'text-emerald-600' : 'text-[#800020]'" x-text="goalDone(g) ? 'Tercapai' : goalPct(g) + '%'"></span>
+                        </span>
+                        <span class="block h-2 overflow-hidden rounded-full bg-neutral-100"><span class="block h-full rounded-full" :class="goalDone(g) ? 'bg-emerald-500' : 'bg-[#800020]'" :style="'width:' + goalPct(g) + '%'"></span></span>
+                        <span class="mt-1 block text-[11px] text-neutral-500" x-text="formatRupiahShort(getGoalSaved(g)) + ' dari ' + formatRupiahShort(g.target)"></span>
+                    </button>
+                </template>
+            </div>
+        </div>
+
+        <!-- Catat dengan suara -->
+        <button type="button" @click="openVoice()" aria-label="Catat transaksi dengan suara"
+                class="flex w-full items-center gap-3 rounded-2xl border border-[#ebd7dc] bg-white p-4 text-left shadow-sm shadow-[#800020]/5 cursor-pointer active:bg-[#fdf2f4]">
+            <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#800020] text-base text-white"><i class="fa-solid fa-microphone"></i></span>
+            <span class="min-w-0 flex-1">
+                <span class="block text-sm font-bold text-neutral-900">Catat dengan suara</span>
+                <span class="block text-xs leading-snug text-neutral-500">Contoh: “beli nasi goreng dua puluh lima ribu”</span>
+            </span>
+            <i class="fa-solid fa-chevron-right shrink-0 text-xs text-neutral-300"></i>
+        </button>
+
+        <!-- Tambah Pemasukan & Pengeluaran (satu template untuk dua baris) -->
+        <template x-for="sec in [{ type: 'income', title: 'Tambah Pemasukan' }, { type: 'expense', title: 'Tambah Pengeluaran' }]" :key="sec.type">
+            <div>
+                <h4 x-text="sec.title" class="m-0 mb-3 text-[13px] font-semibold text-neutral-700"></h4>
+
+                <div class="relative">
+                    <div class="scroll-row scrollbar-none flex gap-3.5 overflow-x-auto pb-1.5 pr-10">
+                        <template x-for="cat in db.categories.filter(c => c.type === sec.type)" :key="cat.id">
+                            <button type="button" @click="openModalWithCategory('modal-add-tx', sec.type, cat.name)"
+                                    class="group flex min-w-[68px] flex-col items-center gap-2 border-none bg-transparent p-0 cursor-pointer active:scale-95 transition-transform">
+                                <span class="flex h-[62px] w-[62px] items-center justify-center rounded-[20px] border border-[#ebd7dc] bg-white text-[22px] text-[#800020] shadow-sm shadow-[#800020]/5 group-active:bg-[#fdf2f4]">
+                                    <i class="fa-solid" :class="cat.icon"></i>
+                                </span>
+                                <span x-text="cat.name" class="max-w-[68px] truncate text-xs font-medium text-neutral-600"></span>
+                            </button>
+                        </template>
+
+                        <!-- Selalu tersedia: kelola kategori -->
+                        <button type="button" @click="goToCategories()"
+                                class="group flex min-w-[68px] flex-col items-center gap-2 border-none bg-transparent p-0 cursor-pointer active:scale-95 transition-transform">
+                            <span class="flex h-[62px] w-[62px] items-center justify-center rounded-[20px] border border-dashed border-[#800020] bg-[#fdf2f4] text-xl text-[#800020]">
+                                <i class="fa-solid fa-plus"></i>
+                            </span>
+                            <span class="text-xs font-semibold text-[#800020]">Kategori</span>
+                        </button>
+                    </div>
+                    <!-- petunjuk bisa digeser -->
+                    <div class="pointer-events-none absolute right-0 top-0 bottom-1.5 w-8 bg-gradient-to-l from-[#faf8f9] to-transparent"></div>
+                </div>
+            </div>
+        </template>
+
+        <!-- Transaksi Terakhir -->
+        <div>
+            <div class="mb-3.5 flex items-center justify-between">
+                <div>
+                    <h3 class="m-0 mb-0.5 text-[15px] font-extrabold tracking-tight text-neutral-900">Transaksi Terakhir</h3>
+                    <p class="m-0 text-xs font-medium text-neutral-500">Aktivitas keuangan terbaru kamu</p>
+                </div>
+                <button type="button" @click="activeTab = 'history'"
+                        class="h-10 rounded-xl border-none bg-[#fdf2f4] px-3.5 text-xs font-bold text-[#800020] cursor-pointer active:bg-[#ebd7dc]">
+                    Lihat Semua
+                </button>
+            </div>
+
+            <div class="flex flex-col gap-2.5">
+                <template x-for="(tx, i) in getRecentTransactions()" :key="(tx.id ?? 'x') + '-' + i">
+                    <button type="button" @click="showReceipt(tx)"
+                            class="relative flex min-h-[64px] w-full items-center gap-3 overflow-hidden rounded-2xl border border-[#ebd7dc] bg-white py-3 pl-5 pr-4 text-left shadow-sm shadow-[#800020]/5 cursor-pointer transition-colors active:bg-[#fdf2f4]">
+
+                        <!-- Garis warna kiri -->
+                        <span class="absolute bottom-0 left-0 top-0 w-1"
+                              :class="txBarClass(tx)"></span>
+
+                        <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-sm"
+                              :class="txIconClass(tx)">
+                            <i class="fa-solid" :class="txIcon(tx)"></i>
+                        </span>
+
+                        <span class="min-w-0 flex-1">
+                            <span x-text="tx.description || tx.category" class="block truncate text-sm font-bold text-neutral-900"></span>
+                            <span x-text="txSubtitle(tx) + ' • ' + formatDateShort(tx.date)"
+                                  class="block truncate text-xs text-neutral-500"></span>
+                        </span>
+
+                        <span x-text="txAmountText(tx)"
+                              :class="txAmountClass(tx)"
+                              class="shrink-0 whitespace-nowrap text-sm font-bold"></span>
+                    </button>
+                </template>
+
+                <!-- Empty state -->
+                <div x-show="db.transactions.length === 0"
+                     class="rounded-2xl border border-[#ebd7dc] bg-white px-4 py-8 text-center shadow-sm shadow-[#800020]/5">
+                    <div class="mx-auto mb-3 flex h-[52px] w-[52px] items-center justify-center rounded-2xl bg-[#fdf2f4] text-xl text-[#800020]">
+                        <i class="fa-solid fa-receipt"></i>
+                    </div>
+                    <h4 class="m-0 mb-1 text-sm font-extrabold text-neutral-900">Belum Ada Transaksi</h4>
+                    <p class="mx-auto mb-4 max-w-[220px] text-xs leading-relaxed text-neutral-500">
+                        Mulai catat transaksi pertamamu agar keuangan lebih teratur.
+                    </p>
+                    <button type="button" @click="openModal('modal-add-tx')"
+                            class="h-11 rounded-xl border-none bg-[#800020] px-5 text-sm font-semibold text-white cursor-pointer active:bg-[#600018]">
+                        Tambah Transaksi
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+
+<!-- TAB 2: RIWAYAT TRANSAKSI -->
+<section x-show="activeTab === 'history'" x-effect="if(activeTab === 'history') initHistoryChart()" x-cloak
+         class="min-h-screen pb-28 app-bg-soft">
+
+    <!-- 1. GRAFIK -->
+    <div class="mx-4 mt-4 bg-white rounded-3xl border border-[#ebd7dc] shadow-sm shadow-[#800020]/5 overflow-hidden">
+        <div class="px-5 pt-5 pb-1 flex items-center justify-between">
+            <span class="text-xs font-bold text-[#800020] uppercase tracking-wider">Grafik Riwayat</span>
+            <div class="flex items-center gap-3 text-xs text-neutral-600">
+                <span class="flex items-center gap-1"><i class="w-2 h-2 rounded-full bg-emerald-600 inline-block"></i>Masuk</span>
+                <span class="flex items-center gap-1"><i class="w-2 h-2 rounded-full bg-rose-500 inline-block"></i>Keluar</span>
+            </div>
+        </div>
+        <div class="relative">
+            <div class="h-[28vh] w-full overflow-x-auto scrollbar-none">
+                <div class="w-[950px] h-full relative px-3 pb-3">
+                    <canvas id="historyChart" class="w-full h-full block" role="img"
+                            aria-label="Grafik pemasukan dan pengeluaran per hari"></canvas>
+                </div>
+            </div>
+            <!-- petunjuk scroll -->
+            <div class="pointer-events-none absolute right-0 top-0 h-full w-10 bg-gradient-to-l from-white to-transparent"></div>
+        </div>
+        <p class="px-5 pb-3 text-xs text-neutral-500">Geser ke samping untuk melihat seluruh bulan</p>
+    </div>
+
+    <div class="px-4 mt-4 space-y-3">
+
+        <!-- 2. RINGKASAN -->
+        <div class="grid grid-cols-2 gap-3">
+            <div class="bg-white border border-[#ebd7dc] rounded-2xl p-3.5 shadow-sm shadow-[#800020]/5 flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-sm shrink-0">
+                    <i class="fa-solid fa-arrow-down"></i>
+                </div>
+                <div class="min-w-0">
+                    <span class="text-xs font-semibold text-neutral-500 block">Total Masuk</span>
+                    <strong x-text="formatRupiahShort(getFilteredMonthlyIncome())"
+                            :title="formatRupiah(getFilteredMonthlyIncome())"
+                            class="text-sm font-bold text-emerald-600 block">Rp 0</strong>
+                </div>
+            </div>
+            <div class="bg-white border border-[#ebd7dc] rounded-2xl p-3.5 shadow-sm shadow-[#800020]/5 flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-sm shrink-0">
+                    <i class="fa-solid fa-arrow-up"></i>
+                </div>
+                <div class="min-w-0">
+                    <span class="text-xs font-semibold text-neutral-500 block">Total Keluar</span>
+                    <strong x-text="formatRupiahShort(getFilteredMonthlyExpense())"
+                            :title="formatRupiah(getFilteredMonthlyExpense())"
+                            class="text-sm font-bold text-rose-600 block">Rp 0</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- Arus kas bulan ini (ketuk untuk analisis & saran) -->
+        <button type="button" @click="openInsight()" aria-label="Lihat analisis dan saran keuangan"
+                class="w-full bg-white border border-[#ebd7dc] rounded-2xl px-4 py-3 shadow-sm shadow-[#800020]/5 flex items-center justify-between text-left active:scale-[0.99] transition">
+            <div>
+                <span class="text-xs font-semibold text-neutral-500 block">Selisih bulan ini</span>
+                <span class="mt-1 inline-flex items-center gap-1 rounded-full bg-[#fdf2f4] px-2 py-0.5 text-[10px] font-bold text-[#800020]">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> Lihat analisis &amp; saran
+                </span>
+            </div>
+            <div class="flex items-center gap-2">
+                <strong x-text="(getMonthNet() >= 0 ? '+ ' : '- ') + formatRupiah(Math.abs(getMonthNet()))"
+                        :class="getMonthNet() >= 0 ? 'text-emerald-600' : 'text-rose-600'"
+                        class="text-sm font-bold"></strong>
+                <i class="fa-solid fa-chevron-right text-[10px] text-neutral-300"></i>
+            </div>
+        </button>
+
+        <!-- 3. NAVIGASI BULAN (sticky) -->
+        <div class="sticky top-0 z-20 bg-white border border-[#ebd7dc] rounded-2xl px-4 py-3 shadow-sm shadow-[#800020]/5 flex items-center justify-between">
+            <div>
+                <h3 x-text="getCurrentMonthLabel()" class="m-0 text-[15px] font-bold text-neutral-900"></h3>
+                <p x-text="getFilteredMonthTransactions().length + ' transaksi tercatat'" class="mt-0.5 text-xs text-neutral-500"></p>
+            </div>
+            <div class="flex gap-2">
+                <button @click="changeMonth(-1)" aria-label="Bulan sebelumnya"
+                        class="w-11 h-11 rounded-xl bg-[#800020] text-white flex items-center justify-center active:scale-95 active:bg-[#600018] transition">
+                    <i class="fa-solid fa-chevron-left text-xs"></i>
+                </button>
+                <button @click="changeMonth(1)" :disabled="!canGoNext()" aria-label="Bulan berikutnya"
+                        class="w-11 h-11 rounded-xl bg-[#800020] text-white flex items-center justify-center active:scale-95 active:bg-[#600018] transition disabled:opacity-30 disabled:pointer-events-none">
+                    <i class="fa-solid fa-chevron-right text-xs"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- 4. FILTER & PENCARIAN -->
+        <div class="space-y-2">
+            <div class="relative">
+                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400 text-xs"></i>
+                <input type="search" x-model.debounce.200ms="searchQuery" placeholder="Cari deskripsi atau kategori"
+                       class="w-full h-11 pl-9 pr-3 rounded-xl border border-[#ebd7dc] bg-white text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#800020]/30">
+            </div>
+            <div class="flex gap-2">
+                <template x-for="f in [{k:'all',l:'Semua'},{k:'income',l:'Masuk'},{k:'expense',l:'Keluar'},{k:'debt',l:'Utang'}]" :key="f.k">
+                    <button @click="historyFilter = f.k" x-text="f.l"
+                            :class="historyFilter === f.k ? 'bg-[#800020] text-white border-[#800020]' : 'bg-white text-neutral-600 border-[#ebd7dc]'"
+                            class="h-9 px-4 rounded-full border text-xs font-semibold transition active:scale-95"></button>
+                </template>
+            </div>
+        </div>
+
+        <!-- 5. DAFTAR RIWAYAT -->
+        <div class="space-y-4">
+            <template x-for="(group, groupIndex) in getGroupedTransactions()" :key="group.date + groupIndex">
+                <section class="bg-white border border-[#ebd7dc] rounded-2xl overflow-hidden shadow-sm shadow-[#800020]/5">
+                    <header class="flex items-center justify-between px-4 py-2.5 bg-[#fdf2f4]/60 border-b border-[#f0e6e8]">
+                        <span x-text="formatDateLabel(group.date)" class="text-xs font-bold text-[#800020]"></span>
+                        <span x-text="(group.total >= 0 ? '+ ' : '- ') + formatRupiah(Math.abs(group.total))"
+                              :class="group.total >= 0 ? 'text-emerald-600' : 'text-neutral-600'"
+                              class="text-xs font-semibold"></span>
+                    </header>
+
+                    <ul class="divide-y divide-[#f5ecee]">
+                        <template x-for="(tx, txIndex) in group.transactions" :key="(tx.id ?? 'x') + '-' + txIndex">
+                            <li>
+                                <button @click="openDetail(tx)"
+                                        class="w-full flex items-center gap-3 px-4 py-3 text-left min-h-[60px] active:bg-[#fdf2f4] transition-colors">
+                                    <span :class="txIconClass(tx)"
+                                          class="w-10 h-10 rounded-xl flex items-center justify-center text-sm shrink-0">
+                                        <i class="fa-solid" :class="txIcon(tx)"></i>
+                                    </span>
+                                    <span class="flex-1 min-w-0">
+                                        <span x-text="tx.description || tx.category" class="block text-sm font-semibold text-neutral-900 truncate"></span>
+                                        <span x-text="txSubtitle(tx)" class="block text-xs text-neutral-500 truncate"></span>
+                                    </span>
+                                    <span x-text="txAmountText(tx)"
+                                          :class="txAmountClass(tx)"
+                                          class="text-sm font-bold whitespace-nowrap shrink-0"></span>
+                                </button>
+                            </li>
+                        </template>
+                    </ul>
+                </section>
+            </template>
+
+            <!-- Empty state -->
+            <div x-show="getGroupedTransactions().length === 0" class="text-center py-10 px-4">
+                <div class="w-16 h-16 mx-auto mb-3 rounded-2xl bg-[#fdf2f4] text-[#800020] flex items-center justify-center text-2xl">
+                    <i class="fa-solid" :class="hasActiveFilter() ? 'fa-magnifying-glass' : 'fa-receipt'"></i>
+                </div>
+                <h4 class="text-sm font-bold text-neutral-800 mb-1"
+                    x-text="hasActiveFilter() ? 'Tidak ada hasil' : 'Belum ada transaksi di ' + getCurrentMonthLabel()"></h4>
+                <p class="text-xs text-neutral-500 max-w-[240px] mx-auto leading-relaxed mb-4"
+                   x-text="hasActiveFilter() ? 'Coba ubah kata kunci atau filter.' : 'Catat pemasukan atau pengeluaranmu agar muncul di sini.'"></p>
+                <button x-show="hasActiveFilter()" @click="resetFilter()"
+                        class="h-11 px-5 rounded-xl border border-[#800020] text-[#800020] text-sm font-semibold active:bg-[#fdf2f4]">Reset filter</button>
+                <button x-show="!hasActiveFilter()" @click="modals['modal-add-tx'] = true"
+                        class="h-11 px-5 rounded-xl bg-[#800020] text-white text-sm font-semibold active:bg-[#600018]">Tambah Transaksi</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 6. BOTTOM SHEET DETAIL -->
+    <div x-show="detailTx" x-cloak class="fixed inset-0 z-50 flex items-end" @keydown.escape.window="closeDetail()" x-dialog data-title="Detail transaksi">
+        <div x-show="detailTx" x-transition.opacity @click="closeDetail()" class="absolute inset-0 bg-black/40"></div>
+        <div x-show="detailTx"
+             x-transition:enter="transition duration-200 ease-out" x-transition:enter-start="translate-y-full" x-transition:enter-end="translate-y-0"
+             x-transition:leave="transition duration-150 ease-in" x-transition:leave-start="translate-y-0" x-transition:leave-end="translate-y-full"
+             class="relative w-full bg-white rounded-t-3xl p-5 pb-8" style="padding-bottom: max(2rem, env(safe-area-inset-bottom));">
+            <div class="w-10 h-1 rounded-full bg-neutral-200 mx-auto mb-4"></div>
+
+            <template x-if="detailTx">
+                <div>
+                    <div class="text-center mb-5">
+    <span :class="txIconClass(detailTx)"
+          class="w-14 h-14 rounded-2xl flex items-center justify-center text-xl mx-auto mb-3">
+        <i class="fa-solid" :class="txIcon(detailTx)"></i>
+    </span>
+    <p x-text="txAmountText(detailTx)"
+       :class="txAmountClass(detailTx)"
+       class="text-2xl font-bold"></p>
+    <span x-show="detailTx.debt_id" class="mt-2 inline-flex items-center gap-1 rounded-full bg-blue-50 px-2.5 py-1 text-[11px] font-bold text-blue-600"><i class="fa-solid fa-handshake"></i> Utang / Piutang</span>
+                    </div>
+                    <dl class="text-sm divide-y divide-[#f5ecee] border border-[#f0e6e8] rounded-2xl mb-5">
+    <div class="flex justify-between px-4 py-2.5"><dt class="text-neutral-500">Kategori</dt><dd x-text="detailTx.category" class="font-semibold text-neutral-900"></dd></div>
+    <div x-show="detailTx.type !== 'transfer'" class="flex justify-between px-4 py-2.5"><dt class="text-neutral-500">Dompet</dt><dd x-text="getAccountName(detailTx.account_id)" class="font-semibold text-neutral-900"></dd></div>
+    <div x-show="detailTx.type === 'transfer'" class="flex justify-between px-4 py-2.5"><dt class="text-neutral-500">Dari</dt><dd x-text="getAccountName(detailTx.account_id)" class="font-semibold text-neutral-900"></dd></div>
+    <div x-show="detailTx.type === 'transfer'" class="flex justify-between px-4 py-2.5"><dt class="text-neutral-500">Ke</dt><dd x-text="getAccountName(detailTx.to_account_id)" class="font-semibold text-neutral-900"></dd></div>
+    <div class="flex justify-between px-4 py-2.5"><dt class="text-neutral-500">Tanggal</dt><dd x-text="formatDateLabel(detailTx.date)" class="font-semibold text-neutral-900"></dd></div>
+    <div class="flex justify-between gap-4 px-4 py-2.5">
+        <dt class="text-neutral-500 shrink-0">Keterangan</dt>
+        <dd x-text="detailTx.description || '-'" class="font-semibold text-neutral-900 text-right break-words min-w-0"></dd>
+    </div>
+                    </dl>
+
+                    <p x-show="detailTx.type === 'adjustment'" class="mb-3 text-center text-xs leading-relaxed text-neutral-500">
+                        Koreksi saldo tidak dihitung sebagai pemasukan atau pengeluaran, dan hanya bisa dihapus.
+                    </p>
+
+                    <!-- aksi normal -->
+                    <div x-show="!confirmDelete" class="grid gap-3" :class="detailTx.type === 'adjustment' ? 'grid-cols-1' : 'grid-cols-2'">
+                        <button @click="confirmDelete = true"
+                                class="h-12 rounded-xl border border-rose-200 text-rose-600 text-sm font-semibold active:bg-rose-50">
+                            <i class="fa-solid fa-trash mr-1.5 text-xs"></i>Hapus
+                        </button>
+                        <button x-show="detailTx.type !== 'adjustment'" @click="editFromDetail()"
+                                class="h-12 rounded-xl bg-[#800020] text-white text-sm font-semibold active:bg-[#600018]">
+                            <i class="fa-solid fa-pen mr-1.5 text-xs"></i>Edit
+                        </button>
+                    </div>
+
+                    <!-- konfirmasi hapus -->
+                    <div x-show="confirmDelete" class="space-y-3">
+                        <p class="text-sm text-center text-neutral-700">Hapus transaksi ini? Saldo dompet akan disesuaikan.</p>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button @click="confirmDelete = false"
+                                    class="h-12 rounded-xl border border-[#ebd7dc] text-neutral-700 text-sm font-semibold active:bg-neutral-50">Batal</button>
+                            <button @click="deleteFromDetail()"
+                                    class="h-12 rounded-xl bg-rose-600 text-white text-sm font-semibold active:bg-rose-700">Ya, hapus</button>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
+
+    <!-- 7. SNACKBAR URUNGKAN -->
+    <div x-show="undoTx" x-cloak x-transition
+         class="fixed left-4 right-4 z-50 bg-neutral-900 text-white rounded-xl px-4 py-3 flex items-center justify-between shadow-lg"
+         style="bottom: max(6rem, calc(env(safe-area-inset-bottom) + 5rem));">
+        <span class="text-sm">Transaksi dihapus</span>
+        <button @click="undoDelete()" class="text-sm font-bold text-[#ffb3c1] h-9 px-2">URUNGKAN</button>
+    </div>
+</section>
+
+
+      
+        <!-- TAB: DOMPET -->
+<section x-show="activeTab === 'wallets'" x-cloak class="px-4 pb-28 min-h-screen app-bg-soft">
+    <div class="space-y-4 pt-4">
+
+        <!-- Total semua dompet -->
+        <div class="rounded-3xl bg-[#800020] p-5 text-white shadow-lg shadow-[#800020]/20">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-medium text-white/80">Total semua dompet</span>
+                <button type="button" @click="openModal('modal-data')" aria-label="Import dan ekspor data"
+                        class="ml-auto mr-1 flex h-9 items-center gap-1.5 rounded-full border-none bg-white/15 px-3 text-[11px] font-bold text-white cursor-pointer active:bg-white/25">
+                    <i class="fa-solid fa-arrow-right-arrow-left"></i> Import / Ekspor
+                </button>
+                <button type="button" @click="showSaldo = !showSaldo" :aria-label="showSaldo ? 'Sembunyikan saldo' : 'Tampilkan saldo'"
+                        class="flex h-9 w-9 items-center justify-center rounded-full border-none bg-transparent text-white/80 cursor-pointer active:bg-white/20">
+                    <i class="fa-solid" :class="showSaldo ? 'fa-eye' : 'fa-eye-slash'"></i>
+                </button>
+            </div>
+            <p class="m-0 mt-1 text-2xl font-bold tracking-tight" x-text="showSaldo ? formatRupiah(getTotalBalance()) : 'Rp •••••••'"></p>
+            <p class="m-0 mt-1 text-xs text-white/70" x-text="db.accounts.length + ' dompet'"></p>
+        </div>
+
+        <!-- Aksi cepat -->
+        <div class="grid grid-cols-2 gap-3">
+            <button type="button" @click="openTransfer()" :disabled="db.accounts.length < 2"
+                    class="flex h-12 items-center justify-center gap-2 rounded-xl border border-[#800020] bg-white text-sm font-semibold text-[#800020] cursor-pointer active:bg-[#fdf2f4] disabled:pointer-events-none disabled:opacity-40">
+                <i class="fa-solid fa-right-left text-xs"></i> Transfer
+            </button>
+            <button type="button" @click="openModal('modal-add-account')"
+                    class="flex h-12 items-center justify-center gap-2 rounded-xl border-none bg-[#800020] text-sm font-semibold text-white cursor-pointer shadow-md shadow-[#800020]/20 active:bg-[#600018]">
+                <i class="fa-solid fa-plus text-xs"></i> Tambah dompet
+            </button>
+        </div>
+        <p x-show="db.accounts.length === 1" class="m-0 text-center text-xs text-neutral-500">Tambahkan dompet kedua untuk bisa transfer antar dompet.</p>
+
+        <!-- Daftar dompet -->
+        <div class="space-y-2.5">
+            <template x-for="acc in db.accounts" :key="acc.id">
+                <button type="button" @click="openWalletSheet(acc)"
+                        class="flex min-h-[68px] w-full items-center gap-3 rounded-2xl border border-[#ebd7dc] bg-white p-4 text-left shadow-sm shadow-[#800020]/5 cursor-pointer transition-colors active:bg-[#fdf2f4]">
+                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#fdf2f4] text-sm text-[#800020]">
+                        <i class="fa-solid fa-wallet"></i>
+                    </span>
+                    <span class="min-w-0 flex-1">
+                        <span x-text="acc.name" class="block truncate text-sm font-bold text-neutral-900"></span>
+                        <span x-text="getAccountTxCount(acc.id) + ' transaksi'" class="block text-xs text-neutral-500"></span>
+                    </span>
+                    <span x-text="showSaldo ? formatRupiah(getAccountBalance(acc)) : 'Rp •••••••'"
+                          :class="getAccountBalance(acc) < 0 ? 'text-rose-600' : 'text-neutral-900'"
+                          class="shrink-0 whitespace-nowrap text-sm font-bold"></span>
+                    <i class="fa-solid fa-chevron-right shrink-0 text-xs text-neutral-300"></i>
+                </button>
+            </template>
+        </div>
+
+        <!-- Empty state -->
+        <div x-show="db.accounts.length === 0" class="rounded-2xl border border-[#ebd7dc] bg-white px-4 py-8 text-center shadow-sm shadow-[#800020]/5">
+            <div class="mx-auto mb-3 flex h-[52px] w-[52px] items-center justify-center rounded-2xl bg-[#fdf2f4] text-xl text-[#800020]">
+                <i class="fa-solid fa-wallet"></i>
+            </div>
+            <h4 class="m-0 mb-1 text-sm font-extrabold text-neutral-900">Belum Ada Dompet</h4>
+            <p class="m-0 text-xs leading-relaxed text-neutral-500">Tambahkan dompet pertamamu, misalnya Tunai atau rekening bank.</p>
+        </div>
+    </div>
+
+    <!-- Target tabungan -->
+    <div class="mt-6 space-y-3">
+        <div class="flex items-center justify-between">
+            <div>
+                <h4 class="m-0 text-[15px] font-extrabold tracking-tight text-neutral-900">Target Tabungan</h4>
+                <p class="m-0 mt-0.5 text-xs text-neutral-500" x-text="db.goals.length ? 'Terkumpul ' + formatRupiah(getTotalGoalSaved()) : 'Sisihkan dana untuk tujuan tertentu'"></p>
+            </div>
+            <button type="button" @click="openAddGoal()" class="h-10 rounded-xl border-none bg-[#800020] px-3.5 text-xs font-bold text-white cursor-pointer shadow-md shadow-[#800020]/20 active:bg-[#600018]"><i class="fa-solid fa-plus mr-1"></i>Target</button>
+        </div>
+
+        <template x-for="g in db.goals" :key="g.id">
+            <button type="button" @click="openGoalSheet(g)" class="block w-full rounded-2xl border border-[#ebd7dc] bg-white p-4 text-left shadow-sm shadow-[#800020]/5 cursor-pointer transition-colors active:bg-[#fdf2f4]">
+                <span class="flex items-center gap-3">
+                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-sm" :class="goalDone(g) ? 'bg-emerald-50 text-emerald-600' : 'bg-[#fdf2f4] text-[#800020]'"><i class="fa-solid" :class="goalDone(g) ? 'fa-circle-check' : 'fa-bullseye'"></i></span>
+                    <span class="min-w-0 flex-1">
+                        <span x-text="g.name" class="block truncate text-sm font-bold text-neutral-900"></span>
+                        <span class="block text-xs text-neutral-500" x-text="formatRupiahShort(getGoalSaved(g)) + ' dari ' + formatRupiahShort(g.target)"></span>
+                    </span>
+                    <span class="shrink-0 text-sm font-bold" :class="goalDone(g) ? 'text-emerald-600' : 'text-[#800020]'" x-text="goalDone(g) ? 'Tercapai' : goalPct(g) + '%'"></span>
+                    <i class="fa-solid fa-chevron-right shrink-0 text-xs text-neutral-300"></i>
+                </span>
+                <span class="mt-3 block h-1.5 overflow-hidden rounded-full bg-neutral-100"><span class="block h-full rounded-full" :class="goalDone(g) ? 'bg-emerald-500' : 'bg-[#800020]'" :style="'width:' + goalPct(g) + '%'"></span></span>
+            </button>
+        </template>
+
+        <div x-show="db.goals.length === 0" class="rounded-2xl border border-dashed border-[#ebd7dc] bg-white px-4 py-6 text-center">
+            <p class="m-0 text-xs leading-relaxed text-neutral-500">Belum ada target. Buat target seperti "Dana darurat" atau "Beli motor" dan pantau progresnya.</p>
+        </div>
+    </div>
+
+    <!-- Bottom sheet detail target -->
+    <div x-show="goalSheetId" x-cloak class="fixed inset-0 z-50 flex items-end" @keydown.escape.window="closeGoalSheet()" x-dialog data-title="Detail target tabungan">
+        <div x-show="goalSheetId" x-transition.opacity @click="closeGoalSheet()" class="absolute inset-0 bg-black/40"></div>
+        <div x-show="goalSheetId"
+             x-transition:enter="transition duration-200 ease-out" x-transition:enter-start="translate-y-full" x-transition:enter-end="translate-y-0"
+             x-transition:leave="transition duration-150 ease-in" x-transition:leave-start="translate-y-0" x-transition:leave-end="translate-y-full"
+             class="relative max-h-[90vh] w-full overflow-y-auto rounded-t-3xl bg-white p-5" style="padding-bottom: max(2rem, env(safe-area-inset-bottom));">
+            <div class="mx-auto mb-4 h-1 w-10 rounded-full bg-neutral-200"></div>
+            <template x-if="goalSheetItem()">
+                <div>
+                    <div class="mb-4 text-center">
+                        <span class="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl text-xl" :class="goalDone(goalSheetItem()) ? 'bg-emerald-50 text-emerald-600' : 'bg-[#fdf2f4] text-[#800020]'"><i class="fa-solid" :class="goalDone(goalSheetItem()) ? 'fa-circle-check' : 'fa-bullseye'"></i></span>
+                        <p x-text="goalSheetItem().name" class="m-0 truncate text-sm font-semibold text-neutral-600"></p>
+                        <p x-text="formatRupiah(getGoalSaved(goalSheetItem()))" class="m-0 mt-1 text-2xl font-bold text-neutral-900"></p>
+                        <p x-text="'dari target ' + formatRupiah(goalSheetItem().target)" class="m-0 mt-0.5 text-xs text-neutral-500"></p>
+                    </div>
+                    <div class="mb-4">
+                        <div class="h-2 overflow-hidden rounded-full bg-neutral-100"><div class="h-full rounded-full" :class="goalDone(goalSheetItem()) ? 'bg-emerald-500' : 'bg-[#800020]'" :style="'width:' + goalPct(goalSheetItem()) + '%'"></div></div>
+                        <div class="mt-1.5 flex justify-between text-[11px] text-neutral-500">
+                            <span x-text="goalPct(goalSheetItem()) + '% tercapai'"></span>
+                            <span x-text="goalDone(goalSheetItem()) ? 'Lunas' : 'Kurang ' + formatRupiah(goalRemaining(goalSheetItem()))"></span>
+                        </div>
+                    </div>
+
+                    <!-- Perkiraan -->
+                    <div class="mb-4 space-y-2">
+                        <template x-for="(e, i) in goalEstimate(goalSheetItem())" :key="i">
+                            <p class="m-0 rounded-xl px-3.5 py-2.5 text-xs leading-relaxed"
+                               :class="{ 'bg-emerald-50 text-emerald-700': e.tone === 'good', 'bg-amber-50 text-amber-800': e.tone === 'warn', 'bg-rose-50 text-rose-700': e.tone === 'bad', 'bg-[#fdf2f4] text-neutral-700': e.tone === 'info' }" x-text="e.text"></p>
+                        </template>
+                        <p x-show="goalSheetItem().deadline" class="m-0 text-[11px] text-neutral-500" x-text="'Tenggat: ' + formatDateShort(goalSheetItem().deadline)"></p>
+                    </div>
+
+                    <!-- Riwayat -->
+                    <div x-show="goalSheetItem().contributions.length" class="mb-4">
+                        <p class="m-0 mb-2 text-[10px] font-bold uppercase tracking-wider text-neutral-400">Riwayat</p>
+                        <div class="divide-y divide-[#f5ecee] overflow-hidden rounded-2xl border border-[#f0e6e8]">
+                            <template x-for="c in goalSheetItem().contributions.slice().reverse()" :key="c.id">
+                                <div class="flex items-center gap-3 px-4 py-2.5">
+                                    <span class="min-w-0 flex-1">
+                                        <span class="block text-xs font-bold" :class="c.amount >= 0 ? 'text-emerald-600' : 'text-rose-600'" x-text="(c.amount >= 0 ? '+ ' : '- ') + formatRupiah(Math.abs(c.amount))"></span>
+                                        <span class="block truncate text-[11px] text-neutral-500" x-text="formatDateShort(c.date) + (c.note ? ' • ' + c.note : '')"></span>
+                                    </span>
+                                    <button type="button" @click="removeGoalContribution(goalSheetItem(), c)" aria-label="Batalkan catatan"
+                                            class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border-none bg-transparent text-xs text-neutral-400 cursor-pointer active:bg-rose-50 active:text-rose-600"><i class="fa-solid fa-rotate-left"></i></button>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <div x-show="!confirmDeleteGoal" class="space-y-3">
+                        <div class="grid grid-cols-2 gap-3">
+                            <button type="button" @click="openGoalDeposit(goalSheetItem(), 'deposit')" class="flex h-12 items-center justify-center gap-2 rounded-xl border-none bg-[#800020] text-sm font-semibold text-white cursor-pointer shadow-md shadow-[#800020]/20 active:bg-[#600018]"><i class="fa-solid fa-plus text-xs"></i> Setor</button>
+                            <button type="button" @click="openGoalDeposit(goalSheetItem(), 'withdraw')" :disabled="getGoalSaved(goalSheetItem()) <= 0" class="flex h-12 items-center justify-center gap-2 rounded-xl border border-[#800020] bg-white text-sm font-semibold text-[#800020] cursor-pointer active:bg-[#fdf2f4] disabled:opacity-40"><i class="fa-solid fa-minus text-xs"></i> Tarik</button>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button type="button" @click="openAddGoal(goalSheetItem())" class="flex h-12 items-center justify-center gap-2 rounded-xl border border-[#ebd7dc] bg-white text-sm font-semibold text-neutral-700 cursor-pointer active:bg-neutral-50"><i class="fa-solid fa-pen text-xs"></i> Edit</button>
+                            <button type="button" @click="confirmDeleteGoal = true" class="flex h-12 items-center justify-center gap-2 rounded-xl border border-rose-200 bg-white text-sm font-semibold text-rose-600 cursor-pointer active:bg-rose-50"><i class="fa-solid fa-trash text-xs"></i> Hapus</button>
+                        </div>
+                    </div>
+                    <div x-show="confirmDeleteGoal" class="space-y-3">
+                        <p class="m-0 text-center text-sm leading-relaxed text-neutral-700">Hapus target ini beserta riwayat setorannya? Saldo dompetmu tidak berubah.</p>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button type="button" @click="confirmDeleteGoal = false" class="h-12 rounded-xl border border-[#ebd7dc] bg-white text-sm font-semibold text-neutral-700 cursor-pointer active:bg-neutral-50">Batal</button>
+                            <button type="button" @click="deleteGoal(goalSheetItem().id)" class="h-12 rounded-xl border-none bg-rose-600 text-sm font-semibold text-white cursor-pointer active:bg-rose-700">Ya, hapus</button>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
+
+    <!-- Bottom sheet aksi dompet -->
+    <div x-show="walletSheetId" x-cloak class="fixed inset-0 z-50 flex items-end" @keydown.escape.window="closeWalletSheet()" x-dialog data-title="Aksi dompet">
+        <div x-show="walletSheetId" x-transition.opacity @click="closeWalletSheet()" class="absolute inset-0 bg-black/40"></div>
+        <div x-show="walletSheetId"
+             x-transition:enter="transition duration-200 ease-out" x-transition:enter-start="translate-y-full" x-transition:enter-end="translate-y-0"
+             x-transition:leave="transition duration-150 ease-in" x-transition:leave-start="translate-y-0" x-transition:leave-end="translate-y-full"
+             class="relative w-full rounded-t-3xl bg-white p-5" style="padding-bottom: max(2rem, env(safe-area-inset-bottom));">
+            <div class="mx-auto mb-4 h-1 w-10 rounded-full bg-neutral-200"></div>
+
+            <template x-if="walletSheetAcc()">
+                <div>
+                    <div class="mb-4 text-center">
+                        <span class="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#fdf2f4] text-xl text-[#800020]">
+                            <i class="fa-solid fa-wallet"></i>
+                        </span>
+                        <p x-text="walletSheetAcc().name" class="m-0 truncate text-sm font-semibold text-neutral-600"></p>
+                        <p x-text="formatRupiah(getAccountBalance(walletSheetAcc()))"
+                           :class="getAccountBalance(walletSheetAcc()) < 0 ? 'text-rose-600' : 'text-neutral-900'"
+                           class="m-0 mt-1 text-2xl font-bold"></p>
+                    </div>
+
+                    <!-- aksi normal -->
+                    <div x-show="!confirmDeleteWallet" class="space-y-3">
+                        <div class="divide-y divide-[#f5ecee] overflow-hidden rounded-2xl border border-[#f0e6e8]">
+                            <button type="button" @click="walletSheetAction('transfer')" :disabled="db.accounts.length < 2"
+                                    class="flex h-[52px] w-full items-center gap-3 border-none bg-transparent px-4 text-left text-sm font-semibold text-neutral-800 cursor-pointer active:bg-[#fdf2f4] disabled:pointer-events-none disabled:opacity-40">
+                                <i class="fa-solid fa-right-left w-4 text-center text-xs text-[#800020]"></i> Transfer dari dompet ini
+                            </button>
+                            <button type="button" @click="walletSheetAction('adjust')"
+                                    class="flex h-[52px] w-full items-center gap-3 border-none bg-transparent px-4 text-left text-sm font-semibold text-neutral-800 cursor-pointer active:bg-[#fdf2f4]">
+                                <i class="fa-solid fa-scale-balanced w-4 text-center text-xs text-[#800020]"></i> Sesuaikan saldo
+                            </button>
+                            <button type="button" @click="walletSheetAction('edit')"
+                                    class="flex h-[52px] w-full items-center gap-3 border-none bg-transparent px-4 text-left text-sm font-semibold text-neutral-800 cursor-pointer active:bg-[#fdf2f4]">
+                                <i class="fa-solid fa-pen w-4 text-center text-xs text-[#800020]"></i> Edit nama dan saldo awal
+                            </button>
+                        </div>
+                        <button type="button" @click="confirmDeleteWallet = true"
+                                class="flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-rose-200 bg-white text-sm font-semibold text-rose-600 cursor-pointer active:bg-rose-50">
+                            <i class="fa-solid fa-trash text-xs"></i> Hapus dompet
+                        </button>
+                    </div>
+
+                    <!-- konfirmasi hapus -->
+                    <div x-show="confirmDeleteWallet" class="space-y-3">
+                        <p class="m-0 text-center text-sm leading-relaxed text-neutral-700"
+                           x-text="getAccountTxCount(walletSheetAcc().id) > 0
+                                   ? 'Dompet ini punya ' + getAccountTxCount(walletSheetAcc().id) + ' transaksi. Transaksinya tetap tersimpan, tetapi tanpa dompet. Hapus dompet?'
+                                   : 'Hapus dompet ini?'"></p>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button type="button" @click="confirmDeleteWallet = false"
+                                    class="h-12 rounded-xl border border-[#ebd7dc] bg-white text-sm font-semibold text-neutral-700 cursor-pointer active:bg-neutral-50">Batal</button>
+                            <button type="button" @click="deleteWalletFromSheet()"
+                                    class="h-12 rounded-xl border-none bg-rose-600 text-sm font-semibold text-white cursor-pointer active:bg-rose-700">Ya, hapus</button>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
+</section>
+
+        <!-- TAB: KATEGORI -->
+<section x-show="activeTab === 'categories'" x-cloak class="px-4 pb-28 min-h-screen app-bg-soft">
+    <div class="space-y-4 pt-4">
+
+        <!-- Header + tombol tambah -->
+        <div class="flex items-center justify-between gap-3">
+            <div class="min-w-0">
+                <h3 class="m-0 text-base font-extrabold text-neutral-900">Kategori</h3>
+                <p class="m-0 mt-0.5 text-xs text-neutral-500">Kelompokkan pemasukan dan pengeluaranmu</p>
+            </div>
+            <button type="button" @click="openAddCategory()"
+                    class="flex h-11 shrink-0 items-center gap-2 rounded-xl border-none bg-[#800020] px-4 text-sm font-semibold text-white cursor-pointer shadow-md shadow-[#800020]/20 active:bg-[#600018]">
+                <i class="fa-solid fa-plus text-xs"></i> Tambah
+            </button>
+        </div>
+
+        <!-- Pilihan jenis (dengan jumlah) -->
+        <div role="tablist" aria-label="Jenis kategori" class="grid grid-cols-2 gap-1.5 rounded-2xl border border-[#ebd7dc]/60 bg-[#fdf2f4] p-1.5">
+            <template x-for="f in [{ k: 'expense', l: 'Pengeluaran' }, { k: 'income', l: 'Pemasukan' }]" :key="f.k">
+                <button type="button" role="tab" :aria-selected="catFilter === f.k" @click="catFilter = f.k"
+                        class="h-11 rounded-xl border-none text-sm font-semibold cursor-pointer transition-all duration-200 active:scale-[0.98]"
+                        :class="catFilter === f.k ? 'bg-[#800020] text-white shadow-sm' : 'bg-transparent text-neutral-600'">
+                    <span x-text="f.l"></span>
+                    <span x-text="'(' + getCategoryTypeCount(f.k) + ')'" class="ml-0.5 text-xs opacity-80"></span>
+                </button>
+            </template>
+        </div>
+
+        <!-- Daftar kategori -->
+        <ul class="m-0 list-none space-y-2.5 p-0">
+            <template x-for="cat in getFilteredCategories()" :key="cat.id">
+                <li>
+                    <button type="button" @click="openCatSheet(cat)"
+                            class="flex min-h-[64px] w-full items-center gap-3 rounded-2xl border border-[#ebd7dc] bg-white p-3.5 text-left shadow-sm shadow-[#800020]/5 cursor-pointer transition-colors active:bg-[#fdf2f4]">
+                        <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#fdf2f4] text-sm text-[#800020]">
+                            <i class="fa-solid" :class="cat.icon"></i>
+                        </span>
+                        <span class="min-w-0 flex-1">
+                            <span x-text="cat.name" class="block truncate text-sm font-bold text-neutral-900"></span>
+                            <span x-text="getCategoryTxCount(cat) > 0 ? getCategoryTxCount(cat) + ' transaksi' : 'Belum dipakai'" class="block text-xs text-neutral-500"></span>
+                            <span x-show="cat.type === 'expense' && cat.budget > 0" class="mt-1.5 block">
+                                <span class="block h-1.5 overflow-hidden rounded-full bg-neutral-100"><span class="block h-full rounded-full"
+                                    :class="getBudgetInfo(cat).level === 'over' ? 'bg-rose-500' : (getBudgetInfo(cat).level === 'warn' ? 'bg-amber-500' : 'bg-emerald-500')"
+                                    :style="'width:' + Math.min(getBudgetInfo(cat).pct, 100) + '%'"></span></span>
+                                <span class="mt-1 block text-[11px] text-neutral-500" x-text="formatRupiahShort(getBudgetInfo(cat).spent) + ' dari ' + formatRupiahShort(cat.budget) + ' bulan ini'"></span>
+                            </span>
+                        </span>
+                        <i class="fa-solid fa-chevron-right shrink-0 text-xs text-neutral-300"></i>
+                    </button>
+                </li>
+            </template>
+        </ul>
+
+        <!-- Empty state -->
+        <div x-show="getFilteredCategories().length === 0" class="rounded-2xl border border-[#ebd7dc] bg-white px-4 py-8 text-center shadow-sm shadow-[#800020]/5">
+            <div class="mx-auto mb-3 flex h-[52px] w-[52px] items-center justify-center rounded-2xl bg-[#fdf2f4] text-xl text-[#800020]">
+                <i class="fa-solid fa-tags"></i>
+            </div>
+            <h4 class="m-0 mb-1 text-sm font-extrabold text-neutral-900"
+                x-text="catFilter === 'income' ? 'Belum ada kategori pemasukan' : 'Belum ada kategori pengeluaran'"></h4>
+            <p class="mx-auto mb-4 max-w-[230px] text-xs leading-relaxed text-neutral-500">Buat kategori agar pencatatan lebih mudah dan rapi.</p>
+            <button type="button" @click="openAddCategory()"
+                    class="h-11 rounded-xl border-none bg-[#800020] px-5 text-sm font-semibold text-white cursor-pointer active:bg-[#600018]">Tambah kategori</button>
+        </div>
+    </div>
+
+    <!-- Bottom sheet aksi kategori -->
+    <div x-show="catSheetId" x-cloak class="fixed inset-0 z-50 flex items-end" @keydown.escape.window="closeCatSheet()" x-dialog data-title="Aksi kategori">
+        <div x-show="catSheetId" x-transition.opacity @click="closeCatSheet()" class="absolute inset-0 bg-black/40"></div>
+        <div x-show="catSheetId"
+             x-transition:enter="transition duration-200 ease-out" x-transition:enter-start="translate-y-full" x-transition:enter-end="translate-y-0"
+             x-transition:leave="transition duration-150 ease-in" x-transition:leave-start="translate-y-0" x-transition:leave-end="translate-y-full"
+             class="relative w-full rounded-t-3xl bg-white p-5" style="padding-bottom: max(2rem, env(safe-area-inset-bottom));">
+            <div class="mx-auto mb-4 h-1 w-10 rounded-full bg-neutral-200"></div>
+
+            <template x-if="catSheetCat()">
+                <div>
+                    <div class="mb-4 text-center">
+                        <span class="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#fdf2f4] text-xl text-[#800020]">
+                            <i class="fa-solid" :class="catSheetCat().icon"></i>
+                        </span>
+                        <p x-text="catSheetCat().name" class="m-0 truncate text-base font-bold text-neutral-900"></p>
+                        <p class="m-0 mt-1 text-xs text-neutral-500"
+                           x-text="(catSheetCat().type === 'income' ? 'Pemasukan' : 'Pengeluaran') + ' • ' + (getCategoryTxCount(catSheetCat()) > 0 ? getCategoryTxCount(catSheetCat()) + ' transaksi' : 'belum dipakai')"></p>
+                    </div>
+
+                    <!-- aksi normal -->
+                    <div x-show="!confirmDeleteCat" class="space-y-3">
+                        <button type="button" @click="editCatFromSheet()"
+                                class="flex h-12 w-full items-center justify-center gap-2 rounded-xl border-none bg-[#800020] text-sm font-semibold text-white cursor-pointer active:bg-[#600018]">
+                            <i class="fa-solid fa-pen text-xs"></i> Edit nama dan ikon
+                        </button>
+                        <button type="button" @click="confirmDeleteCat = true"
+                                class="flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-rose-200 bg-white text-sm font-semibold text-rose-600 cursor-pointer active:bg-rose-50">
+                            <i class="fa-solid fa-trash text-xs"></i> Hapus kategori
+                        </button>
+                    </div>
+
+                    <!-- konfirmasi hapus -->
+                    <div x-show="confirmDeleteCat" class="space-y-3">
+                        <p class="m-0 text-center text-sm leading-relaxed text-neutral-700"
+                           x-text="getCategoryTxCount(catSheetCat()) > 0
+                                   ? 'Kategori ini dipakai di ' + getCategoryTxCount(catSheetCat()) + ' transaksi. Transaksinya tetap tersimpan, tetapi ikon kategorinya berubah menjadi ikon default. Hapus kategori?'
+                                   : 'Hapus kategori ini?'"></p>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button type="button" @click="confirmDeleteCat = false"
+                                    class="h-12 rounded-xl border border-[#ebd7dc] bg-white text-sm font-semibold text-neutral-700 cursor-pointer active:bg-neutral-50">Batal</button>
+                            <button type="button" @click="deleteCatFromSheet()"
+                                    class="h-12 rounded-xl border-none bg-rose-600 text-sm font-semibold text-white cursor-pointer active:bg-rose-700">Ya, hapus</button>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
+</section>
+
+        <!-- TAB 4: UTANG & PIUTANG -->
+<section x-show="activeTab === 'debts'" x-cloak class="px-4 pb-28 min-h-screen app-bg-soft">
+    <div class="space-y-4 pt-4">
+
+        <!-- Ringkasan utang & piutang -->
+        <div class="rounded-3xl bg-[#800020] p-5 text-white shadow-lg shadow-[#800020]/20">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-medium text-white/80">Sisa utang &amp; piutang</span>
+                <button type="button" @click="showSaldo = !showSaldo" :aria-label="showSaldo ? 'Sembunyikan nominal' : 'Tampilkan nominal'"
+                        class="flex h-9 w-9 items-center justify-center rounded-full border-none bg-transparent text-white/80 cursor-pointer active:bg-white/20">
+                    <i class="fa-solid" :class="showSaldo ? 'fa-eye' : 'fa-eye-slash'"></i>
+                </button>
+            </div>
+            <div class="mt-2 grid grid-cols-2 gap-3">
+                <div class="rounded-2xl bg-white/15 p-3">
+                    <p class="m-0 text-[11px] font-medium text-white/70"><i class="fa-solid fa-arrow-trend-down mr-1"></i> Utang saya</p>
+                    <p class="m-0 mt-1 truncate text-base font-bold" x-text="showSaldo ? formatRupiah(getDebtTotals().utang) : 'Rp •••••'"></p>
+                    <p class="m-0 mt-0.5 text-[11px] text-white/60" x-text="getDebtTotals().utangCount + ' belum lunas'"></p>
+                </div>
+                <div class="rounded-2xl bg-white/15 p-3">
+                    <p class="m-0 text-[11px] font-medium text-white/70"><i class="fa-solid fa-arrow-trend-up mr-1"></i> Piutang saya</p>
+                    <p class="m-0 mt-1 truncate text-base font-bold" x-text="showSaldo ? formatRupiah(getDebtTotals().piutang) : 'Rp •••••'"></p>
+                    <p class="m-0 mt-0.5 text-[11px] text-white/60" x-text="getDebtTotals().piutangCount + ' belum kembali'"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Aksi cepat -->
+        <div class="grid grid-cols-2 gap-3">
+            <button type="button" @click="openAddDebt('utang')"
+                    class="flex h-12 items-center justify-center gap-2 rounded-xl border border-[#800020] bg-white text-sm font-semibold text-[#800020] cursor-pointer active:bg-[#fdf2f4]">
+                <i class="fa-solid fa-arrow-trend-down text-xs"></i> Catat utang
+            </button>
+            <button type="button" @click="openAddDebt('piutang')"
+                    class="flex h-12 items-center justify-center gap-2 rounded-xl border-none bg-[#800020] text-sm font-semibold text-white cursor-pointer shadow-md shadow-[#800020]/20 active:bg-[#600018]">
+                <i class="fa-solid fa-arrow-trend-up text-xs"></i> Catat piutang
+            </button>
+        </div>
+
+        <!-- Filter -->
+        <div role="tablist" aria-label="Filter catatan" class="grid grid-cols-4 gap-1.5 rounded-2xl border border-[#ebd7dc]/60 bg-[#fdf2f4] p-1.5">
+            <template x-for="f in [{ k: 'all', l: 'Semua' }, { k: 'utang', l: 'Utang' }, { k: 'piutang', l: 'Piutang' }, { k: 'paid', l: 'Lunas' }]" :key="f.k">
+                <button type="button" role="tab" :aria-selected="debtFilter === f.k" @click="debtFilter = f.k"
+                        class="h-10 rounded-xl border-none text-xs font-semibold cursor-pointer transition-all duration-200 active:scale-[0.98]"
+                        :class="debtFilter === f.k ? 'bg-[#800020] text-white shadow-sm' : 'bg-transparent text-neutral-600'">
+                    <span x-text="f.l"></span>
+                    <span x-text="'(' + getDebtCounts()[f.k] + ')'" class="ml-0.5 opacity-80"></span>
+                </button>
+            </template>
+        </div>
+
+        <!-- Daftar -->
+        <div class="space-y-2.5">
+            <template x-for="d in getFilteredDebts()" :key="d.id">
+                <button type="button" @click="openDebtSheet(d)"
+                        class="block w-full rounded-2xl border border-[#ebd7dc] bg-white p-4 text-left shadow-sm shadow-[#800020]/5 cursor-pointer transition-colors active:bg-[#fdf2f4]">
+                    <span class="flex items-center gap-3">
+                        <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-sm"
+                              :class="d.type === 'utang' ? 'bg-rose-50 text-rose-500' : 'bg-emerald-50 text-emerald-600'">
+                            <i class="fa-solid" :class="d.type === 'utang' ? 'fa-arrow-trend-down' : 'fa-arrow-trend-up'"></i>
+                        </span>
+                        <span class="min-w-0 flex-1">
+                            <span x-text="d.person" class="block truncate text-sm font-bold text-neutral-900"></span>
+                            <span x-text="debtSubtitle(d)" class="block text-xs text-neutral-500"></span>
+                        </span>
+                        <span class="shrink-0 text-right">
+                            <span class="block whitespace-nowrap text-sm font-bold"
+                                  :class="d.status === 'paid' ? 'text-emerald-600' : (d.type === 'utang' ? 'text-rose-600' : 'text-emerald-600')"
+                                  x-text="d.status === 'paid' ? 'Lunas' : (showSaldo ? formatRupiah(d.remaining) : 'Rp •••••')"></span>
+                            <span x-show="d.status !== 'paid'" x-text="'dari ' + formatRupiahShort(d.amount)" class="block text-[11px] text-neutral-400"></span>
+                        </span>
+                        <i class="fa-solid fa-chevron-right shrink-0 text-xs text-neutral-300"></i>
+                    </span>
+                    <span class="mt-3 block h-1.5 overflow-hidden rounded-full bg-neutral-100">
+                        <span class="block h-full rounded-full" :class="d.status === 'paid' ? 'bg-emerald-500' : (d.type === 'utang' ? 'bg-rose-400' : 'bg-emerald-500')" :style="'width:' + debtPct(d) + '%'"></span>
+                    </span>
+                    <span x-show="dueInfo(d)" class="mt-2 block text-[11px] font-semibold"
+                          :class="dueInfo(d) && dueInfo(d).tone === 'bad' ? 'text-rose-600' : (dueInfo(d) && dueInfo(d).tone === 'warn' ? 'text-amber-600' : 'text-neutral-400')"
+                          x-text="dueInfo(d) ? dueInfo(d).text : ''"></span>
+                </button>
+            </template>
+        </div>
+
+        <!-- Empty state -->
+        <div x-show="getFilteredDebts().length === 0" class="rounded-2xl border border-[#ebd7dc] bg-white px-4 py-8 text-center shadow-sm shadow-[#800020]/5">
+            <div class="mx-auto mb-3 flex h-[52px] w-[52px] items-center justify-center rounded-2xl bg-[#fdf2f4] text-xl text-[#800020]">
+                <i class="fa-solid fa-file-invoice-dollar"></i>
+            </div>
+            <h4 class="m-0 mb-1 text-sm font-extrabold text-neutral-900" x-text="db.debts_receivables.length === 0 ? 'Belum Ada Catatan' : 'Tidak Ada Catatan'"></h4>
+            <p class="m-0 text-xs leading-relaxed text-neutral-500"
+               x-text="db.debts_receivables.length === 0 ? 'Catat utang atau piutangmu. Cicilan otomatis masuk ke transaksi dan saldo dompet.' : 'Belum ada catatan pada filter ini.'"></p>
+        </div>
+    </div>
+
+    <!-- Bottom sheet detail utang/piutang -->
+    <div x-show="debtSheetId" x-cloak class="fixed inset-0 z-50 flex items-end" @keydown.escape.window="closeDebtSheet()" x-dialog data-title="Detail utang atau piutang">
+        <div x-show="debtSheetId" x-transition.opacity @click="closeDebtSheet()" class="absolute inset-0 bg-black/40"></div>
+        <div x-show="debtSheetId"
+             x-transition:enter="transition duration-200 ease-out" x-transition:enter-start="translate-y-full" x-transition:enter-end="translate-y-0"
+             x-transition:leave="transition duration-150 ease-in" x-transition:leave-start="translate-y-0" x-transition:leave-end="translate-y-full"
+             class="relative max-h-[90vh] w-full overflow-y-auto rounded-t-3xl bg-white p-5" style="padding-bottom: max(2rem, env(safe-area-inset-bottom));">
+            <div class="mx-auto mb-4 h-1 w-10 rounded-full bg-neutral-200"></div>
+
+            <template x-if="debtSheetItem()">
+                <div>
+                    <div class="mb-4 text-center">
+                        <span class="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl text-xl"
+                              :class="debtSheetItem().type === 'utang' ? 'bg-rose-50 text-rose-500' : 'bg-emerald-50 text-emerald-600'">
+                            <i class="fa-solid" :class="debtSheetItem().type === 'utang' ? 'fa-arrow-trend-down' : 'fa-arrow-trend-up'"></i>
+                        </span>
+                        <p x-text="(debtSheetItem().type === 'utang' ? 'Utang ke ' : 'Piutang dari ') + debtSheetItem().person" class="m-0 truncate text-sm font-semibold text-neutral-600"></p>
+                        <p x-text="debtSheetItem().status === 'paid' ? 'Lunas' : formatRupiah(debtSheetItem().remaining)"
+                           :class="debtSheetItem().status === 'paid' ? 'text-emerald-600' : 'text-neutral-900'" class="m-0 mt-1 text-2xl font-bold"></p>
+                        <p x-show="debtSheetItem().status !== 'paid'" class="m-0 mt-0.5 text-xs text-neutral-500">sisa yang belum dibayar</p>
+                    </div>
+
+                    <!-- Progres -->
+                    <div class="mb-4">
+                        <div class="mb-1.5 flex justify-between text-[11px] text-neutral-500">
+                            <span x-text="'Terbayar ' + formatRupiah(debtSheetItem().amount - debtSheetItem().remaining)"></span>
+                            <span x-text="'dari ' + formatRupiah(debtSheetItem().amount)"></span>
+                        </div>
+                        <div class="h-2 overflow-hidden rounded-full bg-neutral-100">
+                            <div class="h-full rounded-full" :class="debtSheetItem().type === 'utang' ? 'bg-rose-400' : 'bg-emerald-500'" :style="'width:' + debtPct(debtSheetItem()) + '%'"></div>
+                        </div>
+                    </div>
+
+                    <!-- Info -->
+                    <div class="mb-4 divide-y divide-[#f5ecee] overflow-hidden rounded-2xl border border-[#f0e6e8] text-xs">
+                        <div class="flex justify-between px-4 py-2.5"><span class="text-neutral-500">Tanggal dicatat</span><span class="font-semibold text-neutral-800" x-text="formatDateShort(debtSheetItem().date || debtSheetItem().created_at)"></span></div>
+                        <div x-show="debtSheetItem().due_date" class="flex justify-between px-4 py-2.5"><span class="text-neutral-500">Jatuh tempo</span><span class="font-semibold text-neutral-800" x-text="formatDateShort(debtSheetItem().due_date)"></span></div>
+                        <div x-show="debtSheetItem().note" class="flex justify-between gap-4 px-4 py-2.5"><span class="shrink-0 text-neutral-500">Catatan</span><span class="text-right font-semibold text-neutral-800" x-text="debtSheetItem().note"></span></div>
+                    </div>
+
+                    <!-- Riwayat cicilan -->
+                    <div x-show="(debtSheetItem().payments || []).length" class="mb-4">
+                        <p class="m-0 mb-2 text-[10px] font-bold uppercase tracking-wider text-neutral-400">Riwayat cicilan</p>
+                        <div class="divide-y divide-[#f5ecee] overflow-hidden rounded-2xl border border-[#f0e6e8]">
+                            <template x-for="(p, i) in (debtSheetItem().payments || [])" :key="p.id">
+                                <div class="flex items-center gap-3 px-4 py-2.5">
+                                    <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#fdf2f4] text-[11px] font-bold text-[#800020]" x-text="i + 1"></span>
+                                    <span class="min-w-0 flex-1">
+                                        <span class="block text-xs font-bold text-neutral-900" x-text="formatRupiah(p.amount)"></span>
+                                        <span class="block truncate text-[11px] text-neutral-500" x-text="formatDateShort(p.date) + (p.note ? ' • ' + p.note : '')"></span>
+                                    </span>
+                                    <button type="button" @click="removeDebtPayment(debtSheetItem(), p)" aria-label="Batalkan cicilan"
+                                            class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border-none bg-transparent text-xs text-neutral-400 cursor-pointer active:bg-rose-50 active:text-rose-600">
+                                        <i class="fa-solid fa-rotate-left"></i>
+                                    </button>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Aksi normal -->
+                    <div x-show="!confirmDeleteDebt" class="space-y-3">
+                        <div x-show="debtSheetItem().status !== 'paid'" class="grid grid-cols-2 gap-3">
+                            <button type="button" @click="openDebtPay(debtSheetItem())"
+                                    class="flex h-12 items-center justify-center gap-2 rounded-xl border-none bg-[#800020] text-sm font-semibold text-white cursor-pointer shadow-md shadow-[#800020]/20 active:bg-[#600018]">
+                                <i class="fa-solid fa-plus text-xs"></i>
+                                <span x-text="debtSheetItem().type === 'utang' ? 'Bayar cicilan' : 'Terima cicilan'"></span>
+                            </button>
+                            <button type="button" @click="openDebtPay(debtSheetItem(), true)"
+                                    class="flex h-12 items-center justify-center gap-2 rounded-xl border border-[#800020] bg-white text-sm font-semibold text-[#800020] cursor-pointer active:bg-[#fdf2f4]">
+                                <i class="fa-solid fa-check text-xs"></i> Lunasi sisa
+                            </button>
+                        </div>
+                        <button type="button" @click="confirmDeleteDebt = true"
+                                class="flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-rose-200 bg-white text-sm font-semibold text-rose-600 cursor-pointer active:bg-rose-50">
+                            <i class="fa-solid fa-trash text-xs"></i> Hapus catatan
+                        </button>
+                    </div>
+
+                    <!-- Konfirmasi hapus -->
+                    <div x-show="confirmDeleteDebt" class="space-y-3">
+                        <p class="m-0 text-center text-sm leading-relaxed text-neutral-700">Hapus catatan ini? Pilih apa yang terjadi pada transaksi terkait di saldo dompetmu.</p>
+                        <button type="button" @click="deleteDebt(debtSheetItem().id, true)"
+                                class="h-12 w-full rounded-xl border-none bg-rose-600 text-sm font-semibold text-white cursor-pointer active:bg-rose-700">Hapus &amp; batalkan transaksinya</button>
+                        <button type="button" @click="deleteDebt(debtSheetItem().id, false)"
+                                class="h-12 w-full rounded-xl border border-rose-200 bg-white text-sm font-semibold text-rose-600 cursor-pointer active:bg-rose-50">Hapus catatan saja (transaksi tetap)</button>
+                        <button type="button" @click="confirmDeleteDebt = false"
+                                class="h-12 w-full rounded-xl border border-[#ebd7dc] bg-white text-sm font-semibold text-neutral-700 cursor-pointer active:bg-neutral-50">Batal</button>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
+</section>
+
+
+<!-- TAB: PENGATURAN (dibuka dari ikon gir di dashboard, tidak ada di navigasi bawah) -->
+<section x-show="activeTab === 'settings'" x-cloak class="px-4 pb-28 min-h-screen app-bg-soft">
+    <template x-if="activeTab === 'settings'">
+        <div>
+            <div class="sticky top-0 z-20 -mx-4 flex items-center gap-1 px-2 py-2 app-bg">
+                <button type="button" @click="closeSettings()" aria-label="Kembali"
+                        class="flex h-11 w-11 items-center justify-center rounded-full border-none bg-transparent text-neutral-700 cursor-pointer active:bg-[#fdf2f4]"><i class="fa-solid fa-arrow-left"></i></button>
+                <h2 class="m-0 text-base font-extrabold tracking-tight text-neutral-900">Pengaturan</h2>
+            </div>
+
+            <div class="space-y-5 pt-2">
+
+                <!-- Tampilan -->
+                <div>
+                    <p class="m-0 mb-2 px-1 text-[10px] font-bold uppercase tracking-wider text-neutral-400">Tampilan</p>
+                    <div class="overflow-hidden rounded-2xl border border-[#ebd7dc] bg-white divide-y divide-[#f5ecee]">
+                        <div class="px-4 py-3.5">
+                            <div class="flex items-center gap-3">
+                                <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-sm bg-[#fdf2f4] text-[#800020]"><i class="fa-solid fa-palette"></i></span>
+                                <span class="min-w-0 flex-1">
+                                    <span class="block text-sm font-semibold text-neutral-900">Tema</span>
+                                    <span class="block text-xs leading-snug text-neutral-500">Terang, gelap, atau ikuti pengaturan perangkat.</span>
+                                </span>
+                            </div>
+                            <div class="mt-3 grid grid-cols-3 gap-1.5 rounded-2xl bg-[#fdf2f4] p-1.5" role="group" aria-label="Pilih tema">
+                                <template x-for="o in [{ k: 'light', l: 'Terang', i: 'fa-sun' }, { k: 'dark', l: 'Gelap', i: 'fa-moon' }, { k: 'system', l: 'Otomatis', i: 'fa-circle-half-stroke' }]" :key="o.k">
+                                    <button type="button" @click="setTheme(o.k, $event)" :aria-pressed="theme === o.k"
+                                            class="flex h-11 items-center justify-center gap-1.5 rounded-xl border-none text-xs font-semibold cursor-pointer transition-all duration-200 active:scale-[0.98]"
+                                            :class="theme === o.k ? 'bg-[#800020] text-white shadow-sm' : 'bg-transparent text-neutral-600'">
+                                        <i class="fa-solid" :class="o.i"></i><span x-text="o.l"></span>
+                                    </button>
+                                </template>
+                            </div>
+                        </div>
+                        <label class="flex min-h-[64px] cursor-pointer items-center gap-3 px-4 py-3">
+                    <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-sm bg-[#fdf2f4] text-[#800020]"><i class="fa-solid fa-eye-slash"></i></span>
+                    <span class="min-w-0 flex-1">
+                        <span class="block text-sm font-semibold text-neutral-900">Sembunyikan saldo saat dibuka</span>
+                        <span class="block text-xs leading-snug text-neutral-500">Nominal tampil sebagai Rp ••••• sampai kamu mengetuk ikon mata.</span>
+                    </span>
+                    <span class="switch"><input type="checkbox" role="switch" x-model="settings.hideBalance" @change="onHideBalanceChange()"><span class="switch-track"></span></span>
+                </label>
+                    </div>
+                </div>
+
+                <!-- Data & backup -->
+                <div>
+                    <p class="m-0 mb-2 px-1 text-[10px] font-bold uppercase tracking-wider text-neutral-400">Data &amp; backup</p>
+                    <div class="overflow-hidden rounded-2xl border border-[#ebd7dc] bg-white divide-y divide-[#f5ecee]">
+                        <button type="button" @click="openModal('modal-data')"
+                                class="flex min-h-[64px] w-full items-center gap-3 border-none bg-transparent px-4 py-3 text-left cursor-pointer active:bg-[#fdf2f4]">
+                            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-sm bg-[#fdf2f4] text-[#800020]"><i class="fa-solid fa-cloud-arrow-up"></i></span>
+                            <span class="min-w-0 flex-1">
+                                <span class="block text-sm font-semibold text-neutral-900">Backup, ekspor &amp; impor</span>
+                                <span class="block text-xs leading-snug" :class="backupDue() ? 'text-amber-600' : 'text-neutral-500'" x-text="'Backup terakhir: ' + backupStatusText().toLowerCase()"></span>
+                            </span>
+                            <i class="fa-solid fa-chevron-right shrink-0 text-xs text-neutral-300"></i>
+                        </button>
+                        <div class="flex min-h-[64px] items-center gap-3 px-4 py-3">
+                            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-sm bg-[#fdf2f4] text-[#800020]"><i class="fa-solid fa-shield-halved"></i></span>
+                            <span class="min-w-0 flex-1">
+                                <span class="block text-sm font-semibold text-neutral-900">Penyimpanan browser</span>
+                                <span class="block text-xs leading-snug text-neutral-500" x-text="storagePersisted === true ? 'Browser tidak akan menghapus datamu otomatis.' : 'Browser masih boleh menghapus data saat ruang penuh. Rutin backup agar aman.'"></span>
+                            </span>
+                            <span class="shrink-0 text-xs font-bold" :class="storagePersisted ? 'text-emerald-600' : 'text-amber-600'"
+                                  x-text="storagePersisted === true ? 'Dilindungi' : (storagePersisted === false ? 'Belum' : 'Tidak diketahui')"></span>
+                        </div>
+                        <label class="flex min-h-[64px] cursor-pointer items-center gap-3 px-4 py-3">
+                    <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-sm bg-[#fdf2f4] text-[#800020]"><i class="fa-solid fa-bell"></i></span>
+                    <span class="min-w-0 flex-1">
+                        <span class="block text-sm font-semibold text-neutral-900">Ingatkan saya untuk backup</span>
+                        <span class="block text-xs leading-snug text-neutral-500">Muncul di dashboard bila sudah lewat batas waktu.</span>
+                    </span>
+                    <span class="switch"><input type="checkbox" role="switch" x-model="settings.backupReminder" @change="saveSettings()"><span class="switch-track"></span></span>
+                </label>
+                        <div x-show="settings.backupReminder" class="px-4 py-3.5">
+                            <p class="m-0 mb-2 text-xs font-semibold text-neutral-600">Ingatkan setiap</p>
+                            <div class="grid grid-cols-3 gap-1.5 rounded-2xl bg-[#fdf2f4] p-1.5" role="group" aria-label="Batas waktu pengingat backup">
+                                <template x-for="d in [7, 14, 30]" :key="d">
+                                    <button type="button" @click="setBackupInterval(d)" :aria-pressed="settings.backupIntervalDays === d"
+                                            class="h-11 rounded-xl border-none text-xs font-semibold cursor-pointer transition-all duration-200 active:scale-[0.98]"
+                                            :class="settings.backupIntervalDays === d ? 'bg-[#800020] text-white shadow-sm' : 'bg-transparent text-neutral-600'" x-text="d + ' hari'"></button>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data tersimpan -->
+                <div>
+                    <p class="m-0 mb-2 px-1 text-[10px] font-bold uppercase tracking-wider text-neutral-400">Data di perangkat ini</p>
+                    <div class="overflow-hidden rounded-2xl border border-[#ebd7dc] bg-white divide-y divide-[#f5ecee]">
+                        <template x-for="r in dataStatRows()" :key="r.k">
+                            <div class="flex items-center justify-between px-4 py-3 text-sm">
+                                <span class="text-neutral-600" x-text="r.label"></span>
+                                <span class="font-bold text-neutral-900" x-text="r.value"></span>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- Zona berbahaya -->
+                <div>
+                    <p class="m-0 mb-2 px-1 text-[10px] font-bold uppercase tracking-wider text-neutral-400">Zona berbahaya</p>
+                    <div class="overflow-hidden rounded-2xl border border-[#ebd7dc] bg-white divide-y divide-[#f5ecee]">
+                        <button type="button" @click="resetAllData()"
+                                class="flex min-h-[64px] w-full items-center gap-3 border-none bg-transparent px-4 py-3 text-left cursor-pointer active:bg-rose-50">
+                            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-sm bg-rose-50 text-rose-600"><i class="fa-solid fa-trash"></i></span>
+                            <span class="min-w-0 flex-1">
+                                <span class="block text-sm font-semibold text-rose-600">Hapus semua data</span>
+                                <span class="block text-xs leading-snug text-neutral-500">Menghapus semua transaksi, dompet, utang, dan target dari perangkat ini.</span>
+                            </span>
+                            <i class="fa-solid fa-chevron-right shrink-0 text-xs text-neutral-300"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tentang -->
+                <div>
+                    <p class="m-0 mb-2 px-1 text-[10px] font-bold uppercase tracking-wider text-neutral-400">Tentang</p>
+                    <div class="overflow-hidden rounded-2xl border border-[#ebd7dc] bg-white divide-y divide-[#f5ecee]">
+                        <div class="flex items-center gap-3 px-4 py-4">
+                            <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#800020] text-base text-white"><i class="fa-solid fa-wallet"></i></span>
+                            <span class="min-w-0 flex-1">
+                                <span class="block text-sm font-bold text-neutral-900">Fintann</span>
+                                <span class="block text-xs text-neutral-500" x-text="'Versi ' + appVersion"></span>
+                            </span>
+                        </div>
+                        <p class="m-0 px-4 py-3 text-xs leading-relaxed text-neutral-500">Catat keuangan pribadi dengan mudah. Data keuanganmu hanya tersimpan di perangkat ini. Fitur catat dengan suara memakai layanan pengenalan suara milik browser, sehingga rekaman suaranya diproses oleh browser, bukan disimpan oleh Fintann.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+</section>
+
+    </main>
+
+    <!-- NAVIGASI BAWAH -->
+    <nav aria-label="Navigasi utama"
+         class="fixed bottom-0 left-0 right-0 z-30 mx-auto max-w-md border-t border-[#ebd7dc] bg-white/95 backdrop-blur shadow-[0_-4px_20px_rgba(128,0,32,0.06)]"
+         style="padding-bottom: env(safe-area-inset-bottom, 0px);">
+        <div class="grid grid-cols-5 px-1">
+            <template x-for="t in [
+                    { id: 'dashboard',  label: 'Dashboard', icon: 'fa-house' },
+                    { id: 'history',    label: 'Riwayat',   icon: 'fa-clock-rotate-left' },
+                    { id: 'wallets',    label: 'Dompet',    icon: 'fa-wallet' },
+                    { id: 'categories', label: 'Kategori',  icon: 'fa-tags' },
+                    { id: 'debts',      label: 'Utang',     icon: 'fa-handshake' }
+                 ]" :key="t.id">
+                <button type="button"
+                        @click="activeTab = t.id; window.scrollTo({ top: 0 })"
+                        :aria-current="activeTab === t.id ? 'page' : null"
+                        class="flex min-h-[60px] flex-col items-center justify-center gap-1 border-none bg-transparent cursor-pointer transition-transform active:scale-95">
+                    <span class="flex h-7 w-14 items-center justify-center rounded-full transition-colors duration-200"
+                          :class="activeTab === t.id ? 'bg-[#fdf2f4] text-[#800020]' : 'text-neutral-500'">
+                        <i class="fa-solid text-base" :class="t.icon"></i>
+                    </span>
+                    <span x-text="t.label" class="text-[11px] leading-none transition-colors duration-200"
+                          :class="activeTab === t.id ? 'font-bold text-[#800020]' : 'font-medium text-neutral-500'"></span>
+                </button>
+            </template>
+        </div>
+    </nav>
+
+
+    <!-- ================= KUMPULAN MODAL POP-UP ================= -->
+
+    <!-- Modal Tambah/Edit Dompet -->
+    <!-- Modal Tambah/Edit Dompet (Gaya Profesional Maroon & Soft Pink) -->
+<div x-show="modals['modal-add-account']" x-cloak class="fixed inset-0 bg-neutral-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4" x-dialog>
+    <div class="bg-white w-full max-w-sm rounded-[28px] p-6 space-y-5 shadow-2xl border border-neutral-100" @click.outside="closeModal('modal-add-account')">
+        
+        <!-- Header Modal -->
+        <div class="flex items-center justify-between border-b border-neutral-100 pb-3">
+            <div>
+                <h3 class="font-bold text-neutral-900 text-[15px]" x-text="formAccount.id ? 'Edit Dompet' : 'Tambah Dompet'"></h3>
+                <p class="text-[11px] text-neutral-400 mt-0.5">Kelola rekening atau tempat penyimpanan uangmu</p>
+            </div>
+            <button aria-label="Tutup" @click="closeModal('modal-add-account')" class="w-8 h-8 rounded-full bg-neutral-50 text-neutral-400 hover:bg-[#fdf2f4] hover:text-[#800020] flex items-center justify-center transition-colors">
+                <i class="fa-solid fa-xmark text-xs"></i>
+            </button>
+        </div>
+
+        <form @submit.prevent="saveAccount" class="space-y-4">
+            
+            <div class="space-y-3">
+                <div>
+                    <label class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block mb-1">Nama Dompet</label>
+                    <input type="text" x-model="formAccount.name" placeholder="Contoh: BCA, Dompet Tunai, E-Wallet..." required class="w-full px-3.5 py-2.5 border border-neutral-200 rounded-xl text-xs text-neutral-900 outline-none focus:border-[#800020] transition-colors">
+                </div>
+
+                <div>
+                    <label class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block mb-1">Saldo Awal</label>
+                    <div class="relative">
+                        <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-neutral-400">Rp</span>
+                        <input type="text" autocomplete="off" inputmode="numeric" x-money.negative="formAccount.initial_balance" placeholder="0" class="w-full pl-9 pr-3.5 py-2.5 border border-neutral-200 rounded-xl text-xs font-bold text-neutral-900 outline-none focus:border-[#800020] transition-colors">
+                    </div>
+                    <p class="text-[11px] text-neutral-500 mt-1.5 leading-relaxed">Uang yang kamu punya saat mulai mencatat. Saldo saat ini dihitung otomatis dari transaksi.</p>
+                </div>
+
+                <!-- Hanya tampil saat edit -->
+                <div x-show="formAccount.id" class="flex items-center justify-between rounded-xl bg-[#fdf2f4] px-3.5 py-2.5">
+                    <span class="text-[11px] font-medium text-neutral-500">Saldo saat ini</span>
+                    <strong class="text-xs text-[#800020]" x-text="formatRupiah(getAccountBalanceById(formAccount.id))"></strong>
+                </div>
+            </div>
+
+            <!-- Tombol Aksi -->
+            <div class="flex space-x-2.5 pt-2">
+                <button aria-label="Tutup" type="button" @click="closeModal('modal-add-account')" class="flex-1 bg-neutral-100 text-neutral-600 py-3 rounded-xl text-xs font-bold hover:bg-neutral-200 transition-colors">Batal</button>
+                <button type="submit" class="flex-1 bg-[#800020] text-white py-3 rounded-xl text-xs font-bold shadow-md shadow-[#800020]/20 hover:bg-[#600018] transition-colors">Simpan</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+
+
+    <!-- Modal Analisis & Saran Keuangan -->
+    <div x-show="modals['modal-insight']" x-cloak @keydown.escape.window="closeModal('modal-insight')"
+         class="fixed inset-0 bg-neutral-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4" x-dialog>
+        <div class="bg-white w-full max-w-sm rounded-[28px] p-5 space-y-4 shadow-2xl border border-neutral-100 max-h-[92vh] overflow-y-auto" @click.outside="closeModal('modal-insight')">
+
+            <div class="flex items-center justify-between border-b border-neutral-100 pb-3">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-[#fdf2f4] text-[#800020] flex items-center justify-center text-sm"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+                    <div>
+                        <h3 class="font-bold text-neutral-900 text-[15px] leading-tight">Analisis &amp; Saran</h3>
+                        <p class="text-[11px] text-neutral-400 mt-0.5" x-text="insight.monthLabel || getCurrentMonthLabel()"></p>
+                    </div>
+                </div>
+                <button type="button" @click="closeModal('modal-insight')" aria-label="Tutup" class="w-8 h-8 rounded-full bg-neutral-50 text-neutral-400 hover:bg-[#fdf2f4] hover:text-[#800020] flex items-center justify-center transition-colors">
+                    <i class="fa-solid fa-xmark text-xs"></i>
+                </button>
+            </div>
+
+            <!-- Kosong -->
+            <div x-show="insight.empty" class="py-8 text-center">
+                <div class="mx-auto mb-3 w-12 h-12 rounded-2xl bg-neutral-50 text-neutral-300 flex items-center justify-center text-xl"><i class="fa-solid fa-chart-pie"></i></div>
+                <p class="text-sm font-bold text-neutral-700">Belum ada data bulan ini</p>
+                <p class="mt-1 text-xs text-neutral-400 leading-relaxed">Catat pemasukan dan pengeluaran dulu, lalu analisis akan muncul di sini.</p>
+            </div>
+
+            <div x-show="!insight.empty" class="space-y-4">
+                <!-- Skor -->
+                <div class="rounded-2xl p-4 flex items-center gap-4"
+                     :class="{ 'bg-emerald-50': insight.color === 'emerald', 'bg-amber-50': insight.color === 'amber', 'bg-orange-50': insight.color === 'orange', 'bg-rose-50': insight.color === 'rose' }">
+                    <div class="w-16 h-16 rounded-full bg-white flex flex-col items-center justify-center shadow-sm shrink-0">
+                        <span class="text-xl font-extrabold leading-none"
+                              :class="{ 'text-emerald-600': insight.color === 'emerald', 'text-amber-600': insight.color === 'amber', 'text-orange-600': insight.color === 'orange', 'text-rose-600': insight.color === 'rose' }" x-text="insight.score"></span>
+                        <span class="text-[9px] text-neutral-400 font-semibold mt-0.5">dari 100</span>
+                    </div>
+                    <div class="min-w-0">
+                        <p class="text-[10px] font-bold text-neutral-500 uppercase tracking-wider">Kesehatan keuangan</p>
+                        <p class="text-base font-extrabold text-neutral-900" x-text="insight.grade"></p>
+                        <div class="mt-1.5 h-1.5 w-full rounded-full bg-white/80 overflow-hidden">
+                            <div class="h-full rounded-full"
+                                 :class="{ 'bg-emerald-500': insight.color === 'emerald', 'bg-amber-500': insight.color === 'amber', 'bg-orange-500': insight.color === 'orange', 'bg-rose-500': insight.color === 'rose' }"
+                                 :style="'width:' + insight.score + '%'"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ringkasan -->
+                <div class="grid grid-cols-3 gap-2 text-center">
+                    <div class="rounded-xl bg-neutral-50 py-2.5 px-1">
+                        <p class="text-[10px] text-neutral-400 font-semibold">Masuk</p>
+                        <p class="text-xs font-bold text-emerald-600" x-text="formatRupiahShort(insight.income)"></p>
+                    </div>
+                    <div class="rounded-xl bg-neutral-50 py-2.5 px-1">
+                        <p class="text-[10px] text-neutral-400 font-semibold">Keluar</p>
+                        <p class="text-xs font-bold text-rose-600" x-text="formatRupiahShort(insight.expense)"></p>
+                    </div>
+                    <div class="rounded-xl bg-neutral-50 py-2.5 px-1">
+                        <p class="text-[10px] text-neutral-400 font-semibold">Tabungan</p>
+                        <p class="text-xs font-bold text-neutral-800" x-text="insight.savingsRate === null ? '-' : insight.savingsRate + '%'"></p>
+                    </div>
+                </div>
+
+                <!-- Kategori -->
+                <div x-show="insight.cats && insight.cats.length" class="space-y-2">
+                    <p class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">Ke mana uangmu pergi</p>
+                    <template x-for="c in insight.cats" :key="c.name">
+                        <div>
+                            <div class="flex justify-between text-[11px] mb-1">
+                                <span class="font-semibold text-neutral-700" x-text="c.name"></span>
+                                <span class="text-neutral-500" x-text="c.pct + '% • ' + formatRupiahShort(c.amount)"></span>
+                            </div>
+                            <div class="h-1.5 rounded-full bg-neutral-100 overflow-hidden"><div class="h-full rounded-full bg-[#800020]" :style="'width:' + c.pct + '%'"></div></div>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Temuan -->
+                <div class="space-y-2">
+                    <p class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">Temuan</p>
+                    <template x-for="(f, i) in insight.findings" :key="i">
+                        <div class="flex gap-3 rounded-xl border border-neutral-100 p-3">
+                            <div class="w-8 h-8 rounded-lg flex items-center justify-center text-xs shrink-0"
+                                 :class="{ 'bg-emerald-50 text-emerald-600': f.tone === 'good', 'bg-amber-50 text-amber-600': f.tone === 'warn', 'bg-rose-50 text-rose-600': f.tone === 'bad', 'bg-[#fdf2f4] text-[#800020]': f.tone === 'info' }">
+                                <i class="fa-solid" :class="f.icon"></i>
+                            </div>
+                            <div class="min-w-0">
+                                <p class="text-xs font-bold text-neutral-900" x-text="f.title"></p>
+                                <p class="text-[11px] text-neutral-500 leading-relaxed mt-0.5" x-text="f.text"></p>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Saran -->
+                <div class="rounded-2xl bg-[#fdf2f4] p-4 space-y-2">
+                    <p class="text-[10px] font-bold text-[#800020] uppercase tracking-wider"><i class="fa-solid fa-lightbulb mr-1"></i> Saran untukmu</p>
+                    <template x-for="(t, i) in insight.tips" :key="i">
+                        <div class="flex gap-2 text-[11px] leading-relaxed text-neutral-700">
+                            <span class="font-bold text-[#800020]" x-text="(i + 1) + '.'"></span>
+                            <span x-text="t"></span>
+                        </div>
+                    </template>
+                </div>
+
+                <p class="text-[10px] text-neutral-400 leading-relaxed text-center">Dihitung otomatis dari transaksi di perangkat ini. Bersifat panduan umum, bukan nasihat keuangan profesional.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pemberitahuan (pengganti alert bawaan browser) -->
+    <div x-show="toastMsg.text" x-cloak x-transition.opacity.duration.200ms
+         class="fixed left-4 right-4 z-[80] flex justify-center pointer-events-none" style="top: max(1rem, calc(env(safe-area-inset-top) + 0.75rem));">
+        <div :role="toastMsg.type === 'error' ? 'alert' : 'status'" class="pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-xl bg-neutral-900 px-4 py-3 text-white shadow-lg">
+            <i class="fa-solid mt-0.5 text-sm"
+               :class="toastMsg.type === 'error' ? 'fa-circle-exclamation text-amber-400' : (toastMsg.type === 'success' ? 'fa-circle-check text-emerald-400' : 'fa-circle-info text-sky-300')"></i>
+            <p class="m-0 flex-1 text-sm leading-snug" x-text="toastMsg.text"></p>
+            <button type="button" @click="dismissToast()" aria-label="Tutup pemberitahuan" class="-mr-2 -mt-1.5 flex h-11 w-11 shrink-0 items-center justify-center border-none bg-transparent text-xs text-white/70 cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+    </div>
+
+    <!-- Dialog konfirmasi (pengganti confirm bawaan browser) -->
+    <div x-show="confirmDlg.open" x-cloak x-transition.opacity.duration.150ms @keydown.escape.window="resolveConfirm(false)"
+         class="fixed inset-0 z-[70] flex items-center justify-center bg-neutral-900/50 p-4 backdrop-blur-xs">
+        <div role="alertdialog" aria-modal="true" aria-labelledby="confirm-title" aria-describedby="confirm-message"
+             @keydown.tab="trapConfirmTab($event)"
+             class="w-full max-w-xs rounded-[28px] border border-neutral-100 bg-white p-6 text-center shadow-2xl"
+             x-effect="if (confirmDlg.open) $nextTick(() => $refs.confirmCancel && $refs.confirmCancel.focus())">
+            <span class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl text-lg"
+                  :class="confirmDlg.danger ? 'bg-rose-50 text-rose-600' : 'bg-[#fdf2f4] text-[#800020]'">
+                <i class="fa-solid" :class="confirmDlg.danger ? 'fa-triangle-exclamation' : 'fa-circle-question'"></i>
+            </span>
+            <h3 id="confirm-title" class="m-0 text-[15px] font-bold text-neutral-900" x-text="confirmDlg.title"></h3>
+            <p id="confirm-message" x-show="confirmDlg.message" class="m-0 mt-1.5 text-xs leading-relaxed text-neutral-600" x-text="confirmDlg.message"></p>
+            <div x-show="confirmDlg.requireText" class="mt-4 text-left">
+                <label for="confirm-typed" class="mb-1 block text-[11px] font-semibold text-neutral-600" x-text="'Ketik ' + confirmDlg.requireText + ' untuk melanjutkan'"></label>
+                <input id="confirm-typed" type="text" x-model="confirmDlg.typed" autocomplete="off" autocapitalize="characters" spellcheck="false"
+                       @keydown.enter.prevent="resolveConfirm(true)"
+                       class="w-full rounded-xl border border-neutral-200 px-3.5 py-2.5 text-sm font-bold uppercase tracking-wider text-neutral-900 outline-none focus:border-[#800020]">
+            </div>
+            <div class="mt-5 grid grid-cols-2 gap-2.5">
+                <button type="button" x-ref="confirmCancel" @click="resolveConfirm(false)" x-text="confirmDlg.cancelText"
+                        class="h-12 rounded-xl border-none bg-neutral-100 text-xs font-bold text-neutral-700 cursor-pointer active:bg-neutral-200"></button>
+                <button type="button" @click="resolveConfirm(true)" x-text="confirmDlg.confirmText" :disabled="!confirmReady()"
+                        class="h-12 rounded-xl border-none text-xs font-bold text-white cursor-pointer disabled:cursor-not-allowed disabled:opacity-40"
+                        :class="confirmDlg.danger ? 'bg-rose-600 active:bg-rose-700' : 'bg-[#800020] active:bg-[#600018]'"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Catat dengan Suara -->
+    <div x-show="modals['modal-voice']" x-cloak x-dialog @keydown.escape.window="closeModal('modal-voice')"
+         class="fixed inset-0 bg-neutral-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-[28px] p-6 space-y-4 shadow-2xl border border-neutral-100 max-h-[92vh] overflow-y-auto" @click.outside="closeModal('modal-voice')">
+
+            <div class="flex items-center justify-between border-b border-neutral-100 pb-3">
+                <div>
+                    <h3 class="font-bold text-neutral-900 text-[15px]">Catat dengan Suara</h3>
+                    <p class="text-[11px] text-neutral-400 mt-0.5">Ucapkan transaksimu, lalu cek hasilnya</p>
+                </div>
+                <button type="button" @click="closeModal('modal-voice')" aria-label="Tutup" class="w-8 h-8 rounded-full bg-neutral-50 text-neutral-400 hover:bg-[#fdf2f4] hover:text-[#800020] flex items-center justify-center transition-colors"><i class="fa-solid fa-xmark text-xs"></i></button>
+            </div>
+
+            <!-- Mendengarkan / menunggu -->
+            <div x-show="voice.status !== 'result'" class="space-y-4">
+                <div class="flex flex-col items-center gap-3 py-2">
+                    <button type="button" class="voice-orb" :class="{ 'is-listening': voice.status === 'listening' }"
+                            :disabled="voice.status === 'unsupported'"
+                            @click="voice.status === 'listening' ? stopVoice() : startVoice()"
+                            :aria-label="voice.status === 'listening' ? 'Berhenti merekam' : 'Mulai bicara'">
+                        <i class="fa-solid" :class="voice.status === 'listening' ? 'fa-stop' : 'fa-microphone'"></i>
+                    </button>
+                    <p class="m-0 text-center text-sm font-semibold text-neutral-800" role="status" aria-live="polite"
+                       x-text="voice.status === 'listening' ? 'Mendengarkan… ucapkan transaksimu' : (voice.status === 'unsupported' ? 'Pengenalan suara tidak tersedia' : 'Ketuk mikrofon untuk mulai')"></p>
+                    <p x-show="voice.status === 'listening' && (voice.interim || voice.transcript)" class="m-0 min-h-[2.5rem] w-full rounded-xl bg-[#fdf2f4] px-3.5 py-2.5 text-center text-sm italic text-neutral-700"
+                       x-text="'“' + (voice.interim || voice.transcript) + '”'"></p>
+                    <p x-show="voice.status === 'listening'" class="m-0 text-[11px] text-neutral-500">Ketuk tombol lagi bila sudah selesai bicara.</p>
+                </div>
+
+                <p x-show="voice.status === 'error'" class="m-0 rounded-xl bg-rose-50 px-3.5 py-3 text-xs leading-relaxed text-rose-700" role="alert" x-text="voice.error"></p>
+                <p x-show="voice.status === 'unsupported'" class="m-0 rounded-xl bg-amber-50 px-3.5 py-3 text-xs leading-relaxed text-amber-800">Browser ini belum mendukung pengenalan suara. Coba Chrome atau Edge, atau ketik kalimatnya di bawah. Kamu juga bisa memakai tombol mikrofon di keyboard HP.</p>
+
+                <div x-show="voice.status === 'idle' || voice.status === 'error'" class="rounded-xl bg-neutral-50 px-3.5 py-3">
+                    <p class="m-0 mb-1.5 text-[11px] font-bold text-neutral-500">Contoh yang bisa diucapkan</p>
+                    <ul class="m-0 list-none space-y-1 p-0 text-xs text-neutral-600">
+                        <li>“Beli kopi dua puluh ribu”</li>
+                        <li>“Bayar listrik seratus lima puluh ribu kemarin”</li>
+                        <li>“Gaji lima juta” atau “terima bonus 1,5 juta”</li>
+                        <li>“Belanja 350 ribu pakai BCA”</li>
+                    </ul>
+                </div>
+
+                <!-- Cadangan: ketik kalimat -->
+                <div class="space-y-2 border-t border-neutral-100 pt-3">
+                    <label for="voice-typed" class="block text-[10px] font-bold text-neutral-400 uppercase tracking-wider">Atau ketik kalimatnya</label>
+                    <div class="flex gap-2">
+                        <input id="voice-typed" type="text" x-model="voice.typed" @keydown.enter.prevent="parseTypedVoice()" placeholder="mis. beli kopi 20 ribu" autocomplete="off"
+                               class="min-w-0 flex-1 px-3.5 py-2.5 border border-neutral-200 rounded-xl text-xs text-neutral-900 outline-none focus:border-[#800020] transition-colors">
+                        <button type="button" @click="parseTypedVoice()" class="shrink-0 rounded-xl border-none bg-[#800020] px-4 text-xs font-bold text-white cursor-pointer active:bg-[#600018]">Proses</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hasil: cek dan simpan -->
+            <div x-show="voice.status === 'result' && voice.draft" class="space-y-4">
+                <template x-if="voice.draft">
+                    <div class="space-y-4">
+                        <p class="m-0 rounded-xl bg-[#fdf2f4] px-3.5 py-2.5 text-xs italic leading-relaxed text-neutral-700" x-text="'Kamu bilang: “' + voice.transcript + '”'"></p>
+
+                        <div class="flex space-x-2 bg-[#fdf2f4] p-1.5 rounded-2xl text-xs font-semibold" role="group" aria-label="Jenis transaksi">
+                            <button type="button" @click="setVoiceType('expense')" :aria-pressed="voice.draft.type === 'expense'" class="flex-1 py-2.5 rounded-xl transition-all duration-200" :class="voice.draft.type === 'expense' ? 'bg-[#800020] text-white shadow-sm' : 'text-neutral-500'">Pengeluaran</button>
+                            <button type="button" @click="setVoiceType('income')" :aria-pressed="voice.draft.type === 'income'" class="flex-1 py-2.5 rounded-xl transition-all duration-200" :class="voice.draft.type === 'income' ? 'bg-[#800020] text-white shadow-sm' : 'text-neutral-500'">Pemasukan</button>
+                        </div>
+
+                        <div>
+                            <label for="voice-amount" class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block mb-1">Jumlah</label>
+                            <div class="relative">
+                                <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-neutral-400">Rp</span>
+                                <input id="voice-amount" type="text" inputmode="numeric" autocomplete="off" x-money="voice.draft.amount" placeholder="0" class="w-full pl-9 pr-3.5 py-2.5 border border-neutral-200 rounded-xl text-sm font-bold text-neutral-900 outline-none focus:border-[#800020] transition-colors">
+                            </div>
+                            <p x-show="!voice.draft.found.amount" class="mt-1.5 rounded-lg bg-amber-50 px-3 py-2 text-[11px] leading-relaxed text-amber-800">Nominal belum terdengar jelas. Isi jumlahnya secara manual.</p>
+                        </div>
+
+                        <div>
+                            <label for="voice-category" class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block mb-1">Kategori</label>
+                            <select id="voice-category" @change="voice.draft.category = $event.target.value" class="w-full px-3.5 py-2.5 border border-neutral-200 rounded-xl text-xs font-semibold text-neutral-900 bg-white outline-none focus:border-[#800020] transition-colors">
+                                <option value="" :selected="!voice.draft.category">Pilih kategori</option>
+                                <template x-for="c in voiceCategories()" :key="c.id">
+                                    <option :value="c.name" x-text="c.name" :selected="c.name === voice.draft.category"></option>
+                                </template>
+                            </select>
+                            <p x-show="!voice.draft.category" class="mt-1.5 rounded-lg bg-amber-50 px-3 py-2 text-[11px] leading-relaxed text-amber-800">Kategori belum bisa ditebak. Pilih satu dulu.</p>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label for="voice-account" class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block mb-1">Dompet</label>
+                                <select id="voice-account" @change="voice.draft.account_id = $event.target.value" class="w-full px-3 py-2.5 border border-neutral-200 rounded-xl text-xs font-semibold text-neutral-900 bg-white outline-none focus:border-[#800020] transition-colors">
+                                    <template x-for="a in db.accounts" :key="a.id">
+                                        <option :value="a.id" x-text="a.name" :selected="a.id === voice.draft.account_id"></option>
+                                    </template>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="voice-date" class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block mb-1">Tanggal</label>
+                                <input id="voice-date" type="date" x-model="voice.draft.date" class="w-full px-3 py-2.5 border border-neutral-200 rounded-xl text-xs text-neutral-900 outline-none focus:border-[#800020] transition-colors">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="voice-desc" class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block mb-1">Keterangan</label>
+                            <input id="voice-desc" type="text" x-model="voice.draft.description" placeholder="Opsional" class="w-full px-3.5 py-2.5 border border-neutral-200 rounded-xl text-xs text-neutral-900 outline-none focus:border-[#800020] transition-colors">
+                        </div>
+
+                        <div class="flex space-x-2.5 pt-1">
+                            <button type="button" @click="openVoice()" class="flex-1 bg-neutral-100 text-neutral-600 py-3 rounded-xl text-xs font-bold hover:bg-neutral-200 transition-colors"><i class="fa-solid fa-rotate-right mr-1.5"></i>Ulangi</button>
+                            <button type="button" @click="saveVoiceDraft()" class="flex-1 bg-[#800020] text-white py-3 rounded-xl text-xs font-bold shadow-md shadow-[#800020]/20 hover:bg-[#600018] transition-colors">Simpan</button>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <p class="m-0 text-[10px] leading-relaxed text-neutral-400"><i class="fa-solid fa-lock mr-1"></i>Suara diproses oleh layanan pengenalan suara milik browser (mis. Google di Chrome), bukan oleh Fintann. Fintann hanya menyimpan teks hasilnya bila kamu menekan Simpan.</p>
+        </div>
+    </div>
+
+    <!-- Modal Import & Ekspor Data -->
+    <div x-show="modals['modal-data']" x-cloak @keydown.escape.window="closeModal('modal-data')"
+         class="fixed inset-0 bg-neutral-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4" x-dialog>
+        <div class="bg-white w-full max-w-sm rounded-[28px] p-6 space-y-5 shadow-2xl border border-neutral-100 max-h-[92vh] overflow-y-auto" @click.outside="closeModal('modal-data')">
+
+            <div class="flex items-center justify-between border-b border-neutral-100 pb-3">
+                <div>
+                    <h3 class="font-bold text-neutral-900 text-[15px]">Import &amp; Ekspor Data</h3>
+                    <p class="text-[11px] text-neutral-400 mt-0.5">Cadangkan, pindahkan, atau kirim laporanmu</p>
+                </div>
+                <button type="button" @click="closeModal('modal-data')" aria-label="Tutup" class="w-8 h-8 rounded-full bg-neutral-50 text-neutral-400 hover:bg-[#fdf2f4] hover:text-[#800020] flex items-center justify-center transition-colors">
+                    <i class="fa-solid fa-xmark text-xs"></i>
+                </button>
+            </div>
+
+            <!-- Pesan status -->
+            <div x-show="dataMsg.text" x-cloak class="rounded-xl px-3.5 py-2.5 text-[11px] leading-relaxed"
+                 :class="dataMsg.type === 'error' ? 'bg-red-50 text-red-700' : 'bg-emerald-50 text-emerald-700'" x-text="dataMsg.text"></div>
+
+            <!-- Status pengaman data -->
+            <div class="rounded-xl bg-neutral-50 px-3.5 py-3 space-y-1.5 text-[11px]">
+                <div class="flex items-center justify-between gap-3"><span class="text-neutral-500">Backup terakhir</span>
+                    <span class="font-bold" :class="backupDue() ? 'text-amber-600' : 'text-emerald-600'" x-text="backupStatusText()"></span></div>
+                <div class="flex items-center justify-between gap-3"><span class="text-neutral-500">Penyimpanan browser</span>
+                    <span class="font-bold" :class="storagePersisted ? 'text-emerald-600' : 'text-amber-600'" x-text="storagePersisted === true ? 'Dilindungi' : (storagePersisted === false ? 'Belum dilindungi' : 'Tidak diketahui')"></span></div>
+                <p x-show="storagePersisted !== true" class="m-0 pt-1 leading-relaxed text-neutral-500">Browser masih boleh menghapus data saat ruang penyimpanan penuh. Pasang Fintann ke layar utama dan rutin backup agar aman.</p>
+            </div>
+
+            <!-- EKSPOR -->
+            <div class="space-y-3">
+                <p class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">Ekspor</p>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <button type="button" @click="dataForm.period = 'month'" class="py-2 rounded-xl text-[11px] font-bold border transition-colors"
+                            :class="dataForm.period === 'month' ? 'bg-[#800020] text-white border-[#800020]' : 'bg-white text-neutral-500 border-neutral-200'">Bulan ini</button>
+                    <button type="button" @click="dataForm.period = 'all'" class="py-2 rounded-xl text-[11px] font-bold border transition-colors"
+                            :class="dataForm.period === 'all' ? 'bg-[#800020] text-white border-[#800020]' : 'bg-white text-neutral-500 border-neutral-200'">Semua waktu</button>
+                </div>
+
+                <button type="button" @click="sendFileToWhatsApp('csv')" class="w-full bg-[#25D366] text-white py-3 rounded-xl text-xs font-bold shadow-md hover:opacity-90 transition-opacity">
+                    <i class="fa-brands fa-whatsapp mr-1.5"></i> Kirim CSV ke WhatsApp
+                </button>
+                                <button type="button" @click="sendFileToWhatsApp('json')" class="w-full bg-[#25D366] text-white py-3 rounded-xl text-xs font-bold shadow-md hover:opacity-90 transition-opacity">
+                    <i class="fa-brands fa-whatsapp mr-1.5"></i> Backup Data ke WhatsApp
+                </button>
+                <button type="button" @click="sendToWhatsApp()" class="w-full bg-white text-[#128C7E] border border-[#25D366] py-2.5 rounded-xl text-[11px] font-bold hover:bg-emerald-50 transition-colors">
+                    <i class="fa-regular fa-message mr-1.5"></i> Kirim ringkasan teks saja
+                </button>
+                <button type="button" @click="shareBackupText()" class="w-full bg-white text-[#128C7E] border border-[#25D366] py-2.5 rounded-xl text-[11px] font-bold hover:bg-emerald-50 transition-colors">
+                    <i class="fa-solid fa-copy mr-1.5"></i> Kirim Backup sebagai Teks (tanpa file)
+                </button>
+                <button type="button" @click="downloadFile('json')" class="w-full bg-neutral-100 text-neutral-600 py-2.5 rounded-xl text-[11px] font-bold hover:bg-neutral-200 transition-colors">
+                    <i class="fa-solid fa-download mr-1.5"></i> Unduh Backup saja
+                </button>
+                <p class="text-[11px] text-neutral-500 leading-relaxed">Klik tombol hijau, pilih aplikasi (misalnya WhatsApp), lalu pilih kontak dan kirim. CSV hanya berisi transaksi, sedangkan <b>Backup</b> berisi data lengkap (saldo awal, utang, kategori).</p>
+            </div>
+
+            <!-- IMPORT -->
+            <div class="space-y-3 border-t border-neutral-100 pt-4">
+                <p class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">Import</p>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <button type="button" @click="dataForm.importMode = 'merge'" class="py-2 rounded-xl text-[11px] font-bold border transition-colors"
+                            :class="dataForm.importMode === 'merge' ? 'bg-[#800020] text-white border-[#800020]' : 'bg-white text-neutral-500 border-neutral-200'">Gabungkan</button>
+                    <button type="button" @click="dataForm.importMode = 'replace'" class="py-2 rounded-xl text-[11px] font-bold border transition-colors"
+                            :class="dataForm.importMode === 'replace' ? 'bg-[#800020] text-white border-[#800020]' : 'bg-white text-neutral-500 border-neutral-200'">Ganti semua</button>
+                </div>
+                <input type="file" accept=".json,.txt,.csv,application/json,text/plain,text/csv" class="hidden" x-ref="importInput" @change="handleImportFile($event)">
+                <button type="button" @click="$refs.importInput.click()" class="w-full bg-[#800020] text-white py-3 rounded-xl text-xs font-bold shadow-md shadow-[#800020]/20 hover:bg-[#600018] transition-colors">
+                    <i class="fa-solid fa-file-import mr-1.5"></i> Pilih file (.json / .txt / .csv)
+                </button>
+
+                <div class="rounded-2xl bg-neutral-50 p-3 space-y-2">
+                    <p class="text-[11px] font-bold text-neutral-600">Tanpa mencari file</p>
+                    <p class="text-[11px] text-neutral-500 leading-relaxed">Di WhatsApp, tekan lama pesan backup (teks panjang berawalan FINTANN) lalu pilih Salin. Kembali ke sini dan tekan tombol di bawah.</p>
+                    <button type="button" @click="importFromClipboard()" class="w-full bg-[#25D366] text-white py-2.5 rounded-xl text-xs font-bold hover:opacity-90 transition-opacity">
+                        <i class="fa-regular fa-paste mr-1.5"></i> Tempel dari clipboard
+                    </button>
+                    <textarea x-model="dataForm.importText" rows="2" placeholder="Atau tempel kode backup di sini"
+                              class="w-full px-3 py-2 border border-neutral-200 rounded-xl text-[11px] text-neutral-900 outline-none focus:border-[#800020] resize-none"></textarea>
+                    <button type="button" @click="importFromText(dataForm.importText)" :disabled="!dataForm.importText.trim()"
+                            class="w-full bg-[#800020] text-white py-2 rounded-xl text-[11px] font-bold disabled:opacity-40">Impor dari teks</button>
+                </div>
+                <p class="text-[11px] text-neutral-500 leading-relaxed">JSON/TXT: backup dari Fintann. CSV: kolom <b>tanggal</b> (YYYY-MM-DD), <b>tipe</b> (income/expense/transfer), <b>jumlah</b>; opsional kategori, keterangan, dompet, dompet_tujuan. Mode "Ganti semua" hanya berlaku untuk JSON.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Transfer Antar Dompet -->
+    <div x-show="modals['modal-transfer']" x-cloak @keydown.escape.window="closeModal('modal-transfer')"
+         class="fixed inset-0 bg-neutral-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4" x-dialog>
+        <div class="bg-white w-full max-w-sm rounded-[28px] p-6 space-y-5 shadow-2xl border border-neutral-100 max-h-[92vh] overflow-y-auto" @click.outside="closeModal('modal-transfer')">
+
+            <div class="flex items-center justify-between border-b border-neutral-100 pb-3">
+                <div class="min-w-0">
+                    <h3 class="font-bold text-neutral-900 text-[15px]" x-text="formTransfer.id ? 'Edit Transfer' : 'Transfer Antar Dompet'"></h3>
+                    <p class="text-[11px] text-neutral-500 mt-0.5">Pindahkan uang tanpa mencatat pemasukan dan pengeluaran</p>
+                </div>
+                <button type="button" @click="closeModal('modal-transfer')" aria-label="Tutup"
+                        class="w-8 h-8 rounded-full bg-neutral-50 text-neutral-400 hover:bg-[#fdf2f4] hover:text-[#800020] flex items-center justify-center transition-colors">
+                    <i class="fa-solid fa-xmark text-xs"></i>
+                </button>
+            </div>
+
+            <form @submit.prevent="saveTransfer" class="space-y-4">
+
+                <div>
+                    <label class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block mb-1">Dari</label>
+                    <select x-model="formTransfer.from_id" @change="onTransferFromChange()"
+                            class="w-full px-3.5 py-2.5 border border-neutral-200 rounded-xl text-xs font-semibold text-neutral-900 bg-white outline-none focus:border-[#800020] transition-colors">
+                        <template x-for="acc in db.accounts" :key="acc.id">
+                            <option :value="acc.id" x-text="acc.name + ' • ' + formatRupiah(getAccountBalance(acc))" :selected="acc.id === formTransfer.from_id"></option>
+                        </template>
+                    </select>
+                </div>
+
+                <div class="flex justify-center">
+                    <button type="button" @click="swapTransfer()" aria-label="Tukar dompet asal dan tujuan"
+                            class="flex h-10 w-10 items-center justify-center rounded-full border border-[#ebd7dc] bg-[#fdf2f4] text-[#800020] cursor-pointer active:scale-95 transition">
+                        <i class="fa-solid fa-arrow-right-arrow-left rotate-90 text-xs"></i>
+                    </button>
+                </div>
+
+                <div>
+                    <label class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block mb-1">Ke</label>
+                    <select x-model="formTransfer.to_id"
+                            class="w-full px-3.5 py-2.5 border border-neutral-200 rounded-xl text-xs font-semibold text-neutral-900 bg-white outline-none focus:border-[#800020] transition-colors">
+                        <template x-for="acc in db.accounts.filter(a => a.id !== formTransfer.from_id)" :key="acc.id">
+                            <option :value="acc.id" x-text="acc.name + ' • ' + formatRupiah(getAccountBalance(acc))" :selected="acc.id === formTransfer.to_id"></option>
+                        </template>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block mb-1">Jumlah</label>
+                    <div class="relative">
+                        <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-neutral-400">Rp</span>
+                        <input type="text" autocomplete="off" inputmode="numeric" x-money="formTransfer.amount" placeholder="0"
+                               class="w-full pl-9 pr-3.5 py-2.5 border border-neutral-200 rounded-xl text-xs font-bold text-neutral-900 outline-none focus:border-[#800020] transition-colors">
+                    </div>
+                    <p x-show="transferShortfall() > 0" class="mt-1.5 rounded-lg bg-amber-50 px-3 py-2 text-[11px] leading-relaxed text-amber-800">
+                        Saldo dompet asal kurang <b x-text="formatRupiah(transferShortfall())"></b>. Transfer tetap bisa disimpan, dan saldo dompet asal akan minus.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block mb-1">Tanggal</label>
+                        <input type="date" x-model="formTransfer.date"
+                               class="w-full px-3 py-2.5 border border-neutral-200 rounded-xl text-xs text-neutral-900 outline-none focus:border-[#800020] transition-colors">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block mb-1">Catatan</label>
+                        <input type="text" x-model="formTransfer.note" maxlength="60" placeholder="Opsional"
+                               class="w-full px-3 py-2.5 border border-neutral-200 rounded-xl text-xs text-neutral-900 outline-none focus:border-[#800020] transition-colors">
+                    </div>
+                </div>
+
+                <div class="flex space-x-2.5 pt-1">
+                    <button aria-label="Tutup" type="button" @click="closeModal('modal-transfer')"
+                            class="flex-1 bg-neutral-100 text-neutral-600 py-3 rounded-xl text-xs font-bold hover:bg-neutral-200 transition-colors">Batal</button>
+                    <button type="submit" :disabled="!canSaveTransfer()"
+                            class="flex-1 bg-[#800020] text-white py-3 rounded-xl text-xs font-bold shadow-md shadow-[#800020]/20 hover:bg-[#600018] transition-colors disabled:opacity-40 disabled:shadow-none">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Sesuaikan Saldo -->
+    <div x-show="modals['modal-adjust']" x-cloak @keydown.escape.window="closeModal('modal-adjust')"
+         class="fixed inset-0 bg-neutral-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4" x-dialog>
+        <div class="bg-white w-full max-w-sm rounded-[28px] p-6 space-y-5 shadow-2xl border border-neutral-100" @click.outside="closeModal('modal-adjust')">
+
+            <div class="flex items-center justify-between border-b border-neutral-100 pb-3">
+                <div class="min-w-0">
+                    <h3 class="font-bold text-neutral-900 text-[15px]">Sesuaikan Saldo</h3>
+                    <p class="text-[11px] text-neutral-500 mt-0.5 truncate" x-text="getAccountName(formAdjust.account_id)"></p>
+                </div>
+                <button type="button" @click="closeModal('modal-adjust')" aria-label="Tutup"
+                        class="w-8 h-8 rounded-full bg-neutral-50 text-neutral-400 hover:bg-[#fdf2f4] hover:text-[#800020] flex items-center justify-center transition-colors">
+                    <i class="fa-solid fa-xmark text-xs"></i>
+                </button>
+            </div>
+
+            <form @submit.prevent="saveAdjust" class="space-y-4">
+                <div class="flex items-center justify-between rounded-xl bg-neutral-50 px-3.5 py-2.5">
+                    <span class="text-[11px] font-medium text-neutral-500">Saldo di aplikasi</span>
+                    <strong class="text-xs text-neutral-900" x-text="formatRupiah(getAccountBalanceById(formAdjust.account_id))"></strong>
+                </div>
+
+                <div>
+                    <label class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block mb-1">Saldo Sebenarnya</label>
+                    <div class="relative">
+                        <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-neutral-400">Rp</span>
+                        <input type="text" autocomplete="off" inputmode="numeric" x-money.negative="formAdjust.actual" placeholder="Saldo di dompet atau rekeningmu"
+                               class="w-full pl-9 pr-3.5 py-2.5 border border-neutral-200 rounded-xl text-xs font-bold text-neutral-900 outline-none focus:border-[#800020] transition-colors">
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between rounded-xl px-3.5 py-2.5"
+                     :class="getAdjustDiff() === 0 ? 'bg-neutral-50' : 'bg-[#fdf2f4]'">
+                    <span class="text-[11px] font-medium text-neutral-500">Selisih</span>
+                    <strong class="text-xs" :class="getAdjustDiff() === 0 ? 'text-neutral-400' : 'text-[#800020]'" x-text="adjustDiffLabel()"></strong>
+                </div>
+
+                <div>
+                    <label class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block mb-1">Catatan (opsional)</label>
+                    <input type="text" x-model="formAdjust.note" maxlength="60" placeholder="Koreksi saldo"
+                           class="w-full px-3.5 py-2.5 border border-neutral-200 rounded-xl text-xs text-neutral-900 outline-none focus:border-[#800020] transition-colors">
+                </div>
+
+                <p class="text-[11px] text-neutral-500 leading-relaxed">
+                    Selisih dicatat sebagai transaksi <b>Koreksi</b>. Nilainya tidak dihitung sebagai pemasukan atau pengeluaran, hanya menyesuaikan saldo.
+                </p>
+
+                <div class="flex space-x-2.5 pt-1">
+                    <button aria-label="Tutup" type="button" @click="closeModal('modal-adjust')"
+                            class="flex-1 bg-neutral-100 text-neutral-600 py-3 rounded-xl text-xs font-bold hover:bg-neutral-200 transition-colors">Batal</button>
+                    <button type="submit" :disabled="getAdjustDiff() === 0"
+                            class="flex-1 bg-[#800020] text-white py-3 rounded-xl text-xs font-bold shadow-md shadow-[#800020]/20 hover:bg-[#600018] transition-colors disabled:opacity-40 disabled:shadow-none">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Tambah/Edit Transaksi -->
+    <!-- Modal Tambah/Edit Transaksi (Gaya Profesional Maroon & Soft Pink) -->
+<div x-show="modals['modal-add-tx']" x-cloak class="fixed inset-0 bg-neutral-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4" x-dialog>
+    <div class="bg-white w-full max-w-sm rounded-[28px] p-6 space-y-5 shadow-2xl border border-neutral-100" @click.outside="closeModal('modal-add-tx')">
+        
+        <!-- Header Modal -->
+        <div class="flex items-center justify-between border-b border-neutral-100 pb-3">
+            <div>
+                <h3 class="font-bold text-neutral-900 text-[15px]" x-text="formTx.id ? 'Edit Transaksi' : 'Tambah Transaksi'"></h3>
+                <p class="text-[11px] text-neutral-400 mt-0.5">Catat arus kas keuanganmu dengan mudah</p>
+            </div>
+            <button aria-label="Tutup" @click="closeModal('modal-add-tx')" class="w-8 h-8 rounded-full bg-neutral-50 text-neutral-400 hover:bg-[#fdf2f4] hover:text-[#800020] flex items-center justify-center transition-colors">
+                <i class="fa-solid fa-xmark text-xs"></i>
+            </button>
+        </div>
+
+        <form @submit.prevent="saveTransaction" class="space-y-4">
+            
+            <!-- Pilihan Tipe: Keluar / Masuk (Soft Pink & Maroon Focus) -->
+            <div class="flex space-x-2 bg-[#fdf2f4] p-1 rounded-2xl text-xs font-semibold">
+                <button type="button" @click="formTx.type = 'expense'" class="flex-1 py-2 rounded-xl transition-all duration-200" :class="formTx.type === 'expense' ? 'bg-[#800020] text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-900'">Pengeluaran</button>
+                <button type="button" @click="formTx.type = 'income'" class="flex-1 py-2 rounded-xl transition-all duration-200" :class="formTx.type === 'income' ? 'bg-[#800020] text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-900'">Pemasukan</button>
+            </div>
+
+            <!-- Input Grid / Fields -->
+            <div class="space-y-3">
+                <div>
+                    <label class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block mb-1">Akun Dompet</label>
+                    <div class="relative">
+                        <select x-model="formTx.account_id" required class="w-full px-3.5 py-2.5 border border-neutral-200 rounded-xl text-xs bg-white text-neutral-800 outline-none focus:border-[#800020] transition-colors appearance-none">
+                            <template x-for="acc in db.accounts" :key="acc.id">
+                                <option :value="acc.id" x-text="acc.name"></option>
+                            </template>
+                        </select>
+                        <i class="fa-solid fa-chevron-down absolute right-3.5 top-1/2 -translate-y-1/2 text-[10px] text-neutral-400 pointer-events-none"></i>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block mb-1">Jumlah (Rp)</label>
+                    <div class="relative">
+                        <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-neutral-400">Rp</span>
+                        <input inputmode="numeric" type="text" autocomplete="off" x-money="formTx.amount" placeholder="0" required class="w-full pl-9 pr-3.5 py-2.5 border border-neutral-200 rounded-xl text-xs font-bold text-neutral-900 outline-none focus:border-[#800020] transition-colors">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block mb-1">Kategori</label>
+                    <div class="relative">
+                        <select x-model="formTx.category" required class="w-full px-3.5 py-2.5 border border-neutral-200 rounded-xl text-xs bg-white text-neutral-800 outline-none focus:border-[#800020] transition-colors appearance-none">
+                            <template x-for="cat in db.categories.filter(c => c.type === formTx.type)" :key="cat.id">
+                                <option :value="cat.name" x-text="cat.name"></option>
+                            </template>
+                        </select>
+                        <i class="fa-solid fa-chevron-down absolute right-3.5 top-1/2 -translate-y-1/2 text-[10px] text-neutral-400 pointer-events-none"></i>
+                    </div>
+                    <p x-show="txBudgetHint()" x-cloak class="mt-1.5 rounded-lg px-3 py-2 text-[11px] leading-relaxed"
+                       :class="txBudgetHint() && txBudgetHint().level === 'over' ? 'bg-rose-50 text-rose-700' : (txBudgetHint() && txBudgetHint().level === 'warn' ? 'bg-amber-50 text-amber-800' : 'bg-emerald-50 text-emerald-700')"
+                       x-text="txBudgetHint() ? txBudgetHint().text : ''"></p>
+                </div>
+
+                <div>
+                    <label class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block mb-1">Keterangan</label>
+                    <input type="text" x-model="formTx.description" placeholder="Contoh: Belanja bulanan..." required class="w-full px-3.5 py-2.5 border border-neutral-200 rounded-xl text-xs text-neutral-900 outline-none focus:border-[#800020] transition-colors">
+                </div>
+
+                <div>
+                    <label class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block mb-1">Tanggal</label>
+                    <input type="date" x-model="formTx.date" required class="w-full px-3.5 py-2.5 border border-neutral-200 rounded-xl text-xs text-neutral-900 outline-none focus:border-[#800020] transition-colors">
+                </div>
+            </div>
+
+            <!-- Tombol Aksi -->
+            <div class="flex space-x-2.5 pt-2">
+                <button aria-label="Tutup" type="button" @click="closeModal('modal-add-tx')" class="flex-1 bg-neutral-100 text-neutral-600 py-3 rounded-xl text-xs font-bold hover:bg-neutral-200 transition-colors">Batal</button>
+                <button type="submit" class="flex-1 bg-[#800020] text-white py-3 rounded-xl text-xs font-bold shadow-md shadow-[#800020]/20 hover:bg-[#600018] transition-colors">Simpan</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+    <!-- Modal Utang -->
+<!-- Modal Tambah Utang / Piutang -->
+<div x-show="modals['modal-add-debt']" x-cloak @keydown.escape.window="closeModal('modal-add-debt')" class="fixed inset-0 bg-neutral-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4" x-dialog>
+    <div class="bg-white w-full max-w-sm rounded-[28px] p-6 space-y-5 shadow-2xl border border-neutral-100 max-h-[92vh] overflow-y-auto" @click.outside="closeModal('modal-add-debt')">
+
+        <div class="flex items-center justify-between border-b border-neutral-100 pb-3">
+            <div>
+                <h3 class="font-bold text-neutral-900 text-[15px]" x-text="formDebt.type === 'utang' ? 'Catat Utang' : 'Catat Piutang'"></h3>
+                <p class="text-[11px] text-neutral-400 mt-0.5" x-text="formDebt.type === 'utang' ? 'Uang yang kamu pinjam dari orang lain' : 'Uang yang kamu pinjamkan ke orang lain'"></p>
+            </div>
+            <button type="button" @click="closeModal('modal-add-debt')" aria-label="Tutup" class="w-8 h-8 rounded-full bg-neutral-50 text-neutral-400 hover:bg-[#fdf2f4] hover:text-[#800020] flex items-center justify-center transition-colors">
+                <i class="fa-solid fa-xmark text-xs"></i>
+            </button>
+        </div>
+
+        <form @submit.prevent="saveDebt()" class="space-y-4">
+            <div class="flex space-x-2 bg-[#fdf2f4] p-1.5 rounded-2xl text-xs font-semibold">
+                <button type="button" @click="formDebt.type = 'utang'" class="flex-1 py-2 rounded-xl transition-all duration-200" :class="formDebt.type === 'utang' ? 'bg-[#800020] text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-900'">Utang</button>
+                <button type="button" @click="formDebt.type = 'piutang'" class="flex-1 py-2 rounded-xl transition-all duration-200" :class="formDebt.type === 'piutang' ? 'bg-[#800020] text-white shadow-sm' : 'text-neutral-500 hover:text-neutral-900'">Piutang</button>
+            </div>
+
+            <div class="space-y-3">
+                <div>
+                    <label class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block mb-1">Nama orang</label>
+                    <input type="text" x-model="formDebt.person" placeholder="Contoh: Budi, Toko Sebelah" required class="w-full px-3.5 py-2.5 border border-neutral-200 rounded-xl text-xs text-neutral-900 outline-none focus:border-[#800020] transition-colors">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block mb-1">Jumlah</label>
+                    <div class="relative">
+                        <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-neutral-400">Rp</span>
+                        <input type="text" autocomplete="off" inputmode="numeric" x-money="formDebt.amount" placeholder="0" required class="w-full pl-9 pr-3.5 py-2.5 border border-neutral-200 rounded-xl text-xs font-bold text-neutral-900 outline-none focus:border-[#800020] transition-colors">
+                    </div>
+                </div>
+
+                <!-- Catat ke dompet -->
+                <label class="flex items-center justify-between gap-3 rounded-xl bg-[#fdf2f4] px-3.5 py-3 cursor-pointer">
+                    <span class="min-w-0">
+                        <span class="block text-xs font-bold text-neutral-900">Catat ke dompet &amp; transaksi</span>
+                        <span class="block text-[11px] text-neutral-500 leading-snug mt-0.5"
+                              x-text="!db.accounts.length ? 'Buat dompet dulu di tab Dompet.' : (formDebt.type === 'utang' ? 'Saldo dompet bertambah dan tercatat sebagai pemasukan.' : 'Saldo dompet berkurang dan tercatat sebagai pengeluaran.')"></span>
+                    </span>
+                    <input type="checkbox" x-model="formDebt.record" :disabled="!db.accounts.length" class="h-5 w-5 shrink-0 accent-[#800020]">
+                </label>
+
+                <div x-show="formDebt.record">
+                    <label class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block mb-1" x-text="formDebt.type === 'utang' ? 'Uang masuk ke dompet' : 'Uang diambil dari dompet'"></label>
+                    <select x-model="formDebt.account_id" class="w-full px-3.5 py-2.5 border border-neutral-200 rounded-xl text-xs font-semibold text-neutral-900 bg-white outline-none focus:border-[#800020] transition-colors">
+                        <template x-for="acc in db.accounts" :key="acc.id">
+                            <option :value="acc.id" x-text="acc.name + ' • ' + formatRupiah(getAccountBalance(acc))" :selected="acc.id === formDebt.account_id"></option>
+                        </template>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block mb-1">Tanggal</label>
+                        <input type="date" x-model="formDebt.date" class="w-full px-3 py-2.5 border border-neutral-200 rounded-xl text-xs text-neutral-900 outline-none focus:border-[#800020] transition-colors">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block mb-1">Jatuh tempo</label>
+                        <input type="date" x-model="formDebt.due_date" :min="formDebt.date" class="w-full px-3 py-2.5 border border-neutral-200 rounded-xl text-xs text-neutral-900 outline-none focus:border-[#800020] transition-colors">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block mb-1">Catatan (opsional)</label>
+                    <input type="text" x-model="formDebt.note" placeholder="Untuk keperluan apa" class="w-full px-3.5 py-2.5 border border-neutral-200 rounded-xl text-xs text-neutral-900 outline-none focus:border-[#800020] transition-colors">
+                </div>
+            </div>
+
+            <div class="flex space-x-2.5 pt-2">
+                <button aria-label="Tutup" type="button" @click="closeModal('modal-add-debt')" class="flex-1 bg-neutral-100 text-neutral-600 py-3 rounded-xl text-xs font-bold hover:bg-neutral-200 transition-colors">Batal</button>
+                <button type="submit" class="flex-1 bg-[#800020] text-white py-3 rounded-xl text-xs font-bold shadow-md shadow-[#800020]/20 hover:bg-[#600018] transition-colors">Simpan</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Bayar / Terima Cicilan -->
+<div x-show="modals['modal-debt-pay']" x-cloak @keydown.escape.window="closeModal('modal-debt-pay')" class="fixed inset-0 bg-neutral-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4" x-dialog>
+    <div class="bg-white w-full max-w-sm rounded-[28px] p-6 space-y-5 shadow-2xl border border-neutral-100 max-h-[92vh] overflow-y-auto" @click.outside="closeModal('modal-debt-pay')">
+        <template x-if="payDebtItem()">
+            <div class="space-y-5">
+                <div class="flex items-center justify-between border-b border-neutral-100 pb-3">
+                    <div class="min-w-0">
+                        <h3 class="font-bold text-neutral-900 text-[15px]" x-text="payDebtItem().type === 'utang' ? 'Bayar Cicilan' : 'Terima Cicilan'"></h3>
+                        <p class="text-[11px] text-neutral-400 mt-0.5 truncate" x-text="(payDebtItem().type === 'utang' ? 'Utang ke ' : 'Piutang dari ') + payDebtItem().person + ' • sisa ' + formatRupiah(payDebtItem().remaining)"></p>
+                    </div>
+                    <button type="button" @click="closeModal('modal-debt-pay')" aria-label="Tutup" class="w-8 h-8 rounded-full bg-neutral-50 text-neutral-400 hover:bg-[#fdf2f4] hover:text-[#800020] flex items-center justify-center transition-colors">
+                        <i class="fa-solid fa-xmark text-xs"></i>
+                    </button>
+                </div>
+
+                <form @submit.prevent="saveDebtPayment()" class="space-y-4">
+                    <div>
+                        <div class="flex items-center justify-between mb-1">
+                            <label class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">Jumlah</label>
+                            <button type="button" @click="formDebtPay.amount = String(payDebtItem().remaining)" class="border-none bg-transparent p-0 text-[11px] font-bold text-[#800020] cursor-pointer">Isi sisa</button>
+                        </div>
+                        <div class="relative">
+                            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-neutral-400">Rp</span>
+                            <input type="text" autocomplete="off" inputmode="numeric" x-money="formDebtPay.amount" placeholder="0" required class="w-full pl-9 pr-3.5 py-2.5 border border-neutral-200 rounded-xl text-xs font-bold text-neutral-900 outline-none focus:border-[#800020] transition-colors">
+                        </div>
+                        <p x-show="Number(formDebtPay.amount) > payDebtItem().remaining" class="mt-1.5 rounded-lg bg-rose-50 px-3 py-2 text-[11px] leading-relaxed text-rose-700">Nominal melebihi sisa yang harus dibayar.</p>
+                        <p x-show="debtPayShortfall() > 0" class="mt-1.5 rounded-lg bg-amber-50 px-3 py-2 text-[11px] leading-relaxed text-amber-800" x-text="'Saldo dompet kurang ' + formatRupiah(debtPayShortfall()) + ', saldo akan menjadi minus.'"></p>
+                    </div>
+
+                    <div>
+                        <label class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block mb-1" x-text="payDebtItem().type === 'utang' ? 'Dibayar dari dompet' : 'Diterima di dompet'"></label>
+                        <select x-model="formDebtPay.account_id" class="w-full px-3.5 py-2.5 border border-neutral-200 rounded-xl text-xs font-semibold text-neutral-900 bg-white outline-none focus:border-[#800020] transition-colors">
+                            <template x-for="acc in db.accounts" :key="acc.id">
+                                <option :value="acc.id" x-text="acc.name + ' • ' + formatRupiah(getAccountBalance(acc))" :selected="acc.id === formDebtPay.account_id"></option>
+                            </template>
+                        </select>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block mb-1">Tanggal</label>
+                            <input type="date" x-model="formDebtPay.date" class="w-full px-3 py-2.5 border border-neutral-200 rounded-xl text-xs text-neutral-900 outline-none focus:border-[#800020] transition-colors">
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block mb-1">Catatan</label>
+                            <input type="text" x-model="formDebtPay.note" placeholder="Opsional" class="w-full px-3 py-2.5 border border-neutral-200 rounded-xl text-xs text-neutral-900 outline-none focus:border-[#800020] transition-colors">
+                        </div>
+                    </div>
+
+                    <p class="text-[11px] text-neutral-500 leading-relaxed" x-text="payDebtItem().type === 'utang' ? 'Otomatis tercatat sebagai pengeluaran dan mengurangi saldo dompet.' : 'Otomatis tercatat sebagai pemasukan dan menambah saldo dompet.'"></p>
+
+                    <div class="flex space-x-2.5 pt-1">
+                        <button aria-label="Tutup" type="button" @click="closeModal('modal-debt-pay')" class="flex-1 bg-neutral-100 text-neutral-600 py-3 rounded-xl text-xs font-bold hover:bg-neutral-200 transition-colors">Batal</button>
+                        <button type="submit" :disabled="Number(formDebtPay.amount) > payDebtItem().remaining" class="flex-1 bg-[#800020] text-white py-3 rounded-xl text-xs font-bold shadow-md shadow-[#800020]/20 hover:bg-[#600018] transition-colors disabled:opacity-40">Simpan</button>
+                    </div>
+                </form>
+            </div>
+        </template>
+    </div>
+</div>
+
+
+<!-- Modal Tambah/Edit Target Tabungan -->
+<div x-show="modals['modal-add-goal']" x-cloak @keydown.escape.window="closeModal('modal-add-goal')" class="fixed inset-0 bg-neutral-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4" x-dialog>
+    <div class="bg-white w-full max-w-sm rounded-[28px] p-6 space-y-5 shadow-2xl border border-neutral-100 max-h-[92vh] overflow-y-auto" @click.outside="closeModal('modal-add-goal')">
+        <div class="flex items-center justify-between border-b border-neutral-100 pb-3">
+            <div>
+                <h3 class="font-bold text-neutral-900 text-[15px]" x-text="formGoal.id ? 'Edit Target' : 'Target Baru'"></h3>
+                <p class="text-[11px] text-neutral-400 mt-0.5">Tentukan tujuan dan nominalnya</p>
+            </div>
+            <button type="button" @click="closeModal('modal-add-goal')" aria-label="Tutup" class="w-8 h-8 rounded-full bg-neutral-50 text-neutral-400 hover:bg-[#fdf2f4] hover:text-[#800020] flex items-center justify-center transition-colors"><i class="fa-solid fa-xmark text-xs"></i></button>
+        </div>
+        <form @submit.prevent="saveGoal()" class="space-y-4">
+            <div>
+                <label class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block mb-1">Nama target</label>
+                <input type="text" x-model="formGoal.name" maxlength="40" placeholder="Contoh: Dana darurat, Beli motor" required class="w-full px-3.5 py-2.5 border border-neutral-200 rounded-xl text-xs text-neutral-900 outline-none focus:border-[#800020] transition-colors">
+            </div>
+            <div>
+                <label class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block mb-1">Nominal target</label>
+                <div class="relative">
+                    <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-neutral-400">Rp</span>
+                    <input type="text" autocomplete="off" inputmode="numeric" x-money="formGoal.target" placeholder="0" required class="w-full pl-9 pr-3.5 py-2.5 border border-neutral-200 rounded-xl text-xs font-bold text-neutral-900 outline-none focus:border-[#800020] transition-colors">
+                </div>
+            </div>
+            <div x-show="!formGoal.id">
+                <label class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block mb-1">Dana yang sudah ada (opsional)</label>
+                <div class="relative">
+                    <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-neutral-400">Rp</span>
+                    <input type="text" autocomplete="off" inputmode="numeric" x-money="formGoal.saved" placeholder="0" class="w-full pl-9 pr-3.5 py-2.5 border border-neutral-200 rounded-xl text-xs font-bold text-neutral-900 outline-none focus:border-[#800020] transition-colors">
+                </div>
+            </div>
+            <div>
+                <label class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block mb-1">Tenggat (opsional)</label>
+                <input type="date" x-model="formGoal.deadline" class="w-full px-3 py-2.5 border border-neutral-200 rounded-xl text-xs text-neutral-900 outline-none focus:border-[#800020] transition-colors">
+            </div>
+            <p class="text-[11px] text-neutral-500 leading-relaxed">Setoran ke target hanya mencatat dana yang kamu sisihkan. Saldo dompet tidak berubah.</p>
+            <div class="flex space-x-2.5 pt-1">
+                <button aria-label="Tutup" type="button" @click="closeModal('modal-add-goal')" class="flex-1 bg-neutral-100 text-neutral-600 py-3 rounded-xl text-xs font-bold hover:bg-neutral-200 transition-colors">Batal</button>
+                <button type="submit" class="flex-1 bg-[#800020] text-white py-3 rounded-xl text-xs font-bold shadow-md shadow-[#800020]/20 hover:bg-[#600018] transition-colors">Simpan</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Setor / Tarik Target -->
+<div x-show="modals['modal-goal-deposit']" x-cloak @keydown.escape.window="closeModal('modal-goal-deposit')" class="fixed inset-0 bg-neutral-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4" x-dialog>
+    <div class="bg-white w-full max-w-sm rounded-[28px] p-6 space-y-5 shadow-2xl border border-neutral-100 max-h-[92vh] overflow-y-auto" @click.outside="closeModal('modal-goal-deposit')">
+        <template x-if="depositGoalItem()">
+            <div class="space-y-5">
+                <div class="flex items-center justify-between border-b border-neutral-100 pb-3">
+                    <div class="min-w-0">
+                        <h3 class="font-bold text-neutral-900 text-[15px]" x-text="formGoalDeposit.mode === 'withdraw' ? 'Tarik Dana' : 'Setor ke Target'"></h3>
+                        <p class="text-[11px] text-neutral-400 mt-0.5 truncate" x-text="depositGoalItem().name + ' • terkumpul ' + formatRupiah(getGoalSaved(depositGoalItem()))"></p>
+                    </div>
+                    <button type="button" @click="closeModal('modal-goal-deposit')" aria-label="Tutup" class="w-8 h-8 rounded-full bg-neutral-50 text-neutral-400 hover:bg-[#fdf2f4] hover:text-[#800020] flex items-center justify-center transition-colors"><i class="fa-solid fa-xmark text-xs"></i></button>
+                </div>
+                <form @submit.prevent="saveGoalDeposit()" class="space-y-4">
+                    <div>
+                        <div class="flex items-center justify-between mb-1">
+                            <label class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">Jumlah</label>
+                            <button type="button" x-show="formGoalDeposit.mode === 'deposit' && goalRemaining(depositGoalItem()) > 0" @click="formGoalDeposit.amount = String(goalRemaining(depositGoalItem()))" class="border-none bg-transparent p-0 text-[11px] font-bold text-[#800020] cursor-pointer">Isi sisa target</button>
+                        </div>
+                        <div class="relative">
+                            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-neutral-400">Rp</span>
+                            <input type="text" autocomplete="off" inputmode="numeric" x-money="formGoalDeposit.amount" placeholder="0" required class="w-full pl-9 pr-3.5 py-2.5 border border-neutral-200 rounded-xl text-xs font-bold text-neutral-900 outline-none focus:border-[#800020] transition-colors">
+                        </div>
+                        <p x-show="formGoalDeposit.mode === 'withdraw' && Number(formGoalDeposit.amount) > getGoalSaved(depositGoalItem())" class="mt-1.5 rounded-lg bg-rose-50 px-3 py-2 text-[11px] text-rose-700">Penarikan melebihi dana terkumpul.</p>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block mb-1">Tanggal</label>
+                            <input type="date" x-model="formGoalDeposit.date" class="w-full px-3 py-2.5 border border-neutral-200 rounded-xl text-xs text-neutral-900 outline-none focus:border-[#800020] transition-colors">
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block mb-1">Catatan</label>
+                            <input type="text" x-model="formGoalDeposit.note" placeholder="Opsional" class="w-full px-3 py-2.5 border border-neutral-200 rounded-xl text-xs text-neutral-900 outline-none focus:border-[#800020] transition-colors">
+                        </div>
+                    </div>
+                    <div class="flex space-x-2.5 pt-1">
+                        <button aria-label="Tutup" type="button" @click="closeModal('modal-goal-deposit')" class="flex-1 bg-neutral-100 text-neutral-600 py-3 rounded-xl text-xs font-bold hover:bg-neutral-200 transition-colors">Batal</button>
+                        <button type="submit" class="flex-1 bg-[#800020] text-white py-3 rounded-xl text-xs font-bold shadow-md shadow-[#800020]/20 hover:bg-[#600018] transition-colors">Simpan</button>
+                    </div>
+                </form>
+            </div>
+        </template>
+    </div>
+</div>
+
+    <!-- Modal Kategori dengan Icon Picker Grid -->
+    <!-- Modal Tambah Kategori -->
+<div x-show="modals['modal-add-category']" x-cloak class="fixed inset-0 bg-neutral-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4" x-dialog>
+    <div class="bg-white w-full max-w-sm rounded-[28px] p-6 space-y-4 shadow-2xl border border-neutral-100 max-h-[90vh] overflow-y-auto scrollbar-none" @click.outside="closeModal('modal-add-category')">
+        
+        <!-- Header -->
+        <div class="flex items-center justify-between border-b border-neutral-100 pb-3">
+            <div>
+                <h3 class="font-bold text-neutral-900 text-[15px]" x-text="formCategory.id ? 'Edit Kategori' : 'Tambah Kategori'"></h3>
+                <p class="text-[11px] text-neutral-500 mt-0.5" x-text="formCategory.id ? 'Ubah nama dan ikon kategori' : 'Pilih jenis, nama, dan ikon'"></p>
+            </div>
+            <button type="button" @click="closeModal('modal-add-category')" aria-label="Tutup" class="w-10 h-10 rounded-full bg-neutral-50 text-neutral-500 active:bg-[#fdf2f4] active:text-[#800020] flex items-center justify-center transition-colors">
+                <i class="fa-solid fa-xmark text-xs"></i>
+            </button>
+        </div>
+
+        <form @submit.prevent="saveCategory" class="space-y-4">
+            
+            <!-- Pilihan Tipe -->
+            <div class="flex space-x-2 bg-[#fdf2f4] p-1.5 rounded-2xl text-xs font-semibold">
+                <button type="button" @click="setCategoryType('expense')" :disabled="!!formCategory.id" class="flex-1 h-11 rounded-xl transition-all duration-200 disabled:cursor-not-allowed" :class="[formCategory.type === 'expense' ? 'bg-[#800020] text-white shadow-sm' : 'text-neutral-600', formCategory.id && formCategory.type !== 'expense' ? 'opacity-40' : '']">Pengeluaran</button>
+                <button type="button" @click="setCategoryType('income')" :disabled="!!formCategory.id" class="flex-1 h-11 rounded-xl transition-all duration-200 disabled:cursor-not-allowed" :class="[formCategory.type === 'income' ? 'bg-[#800020] text-white shadow-sm' : 'text-neutral-600', formCategory.id && formCategory.type !== 'income' ? 'opacity-40' : '']">Pemasukan</button>
+            </div>
+            <p x-show="formCategory.id" class="-mt-2 text-[11px] leading-relaxed text-neutral-500">Jenis tidak bisa diubah setelah dibuat. Mengganti nama juga memperbarui transaksi yang memakai kategori ini.</p>
+
+            <!-- Nama Kategori -->
+            <div>
+                <label class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block mb-1">Nama Kategori</label>
+                <input type="text" x-model="formCategory.name" maxlength="30" autocomplete="off" placeholder="Contoh: Belanja, Gaji, Transportasi..." required class="w-full px-3.5 py-2.5 border border-neutral-200 rounded-xl text-xs text-neutral-900 outline-none focus:border-[#800020] transition-colors">
+            </div>
+
+            <!-- Pilihan Ikon -->
+            <!-- Anggaran bulanan (hanya pengeluaran) -->
+            <div x-show="formCategory.type === 'expense'">
+                <label class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block mb-1">Anggaran bulanan (opsional)</label>
+                <div class="relative">
+                    <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-neutral-400">Rp</span>
+                    <input type="text" autocomplete="off" inputmode="numeric" x-money="formCategory.budget" placeholder="Kosongkan bila tanpa batas" class="w-full pl-9 pr-3.5 py-2.5 border border-neutral-200 rounded-xl text-xs font-bold text-neutral-900 outline-none focus:border-[#800020] transition-colors">
+                </div>
+                <p class="mt-1.5 text-[11px] leading-relaxed text-neutral-500">Kamu akan diingatkan saat pengeluaran kategori ini mendekati dan melewati batas.</p>
+            </div>
+
+            <div>
+                <label class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block mb-1" x-text="formCategory.type === 'income' ? 'Pilih Ikon Pemasukan' : 'Pilih Ikon Pengeluaran'"></label>
+                <div class="grid grid-cols-5 gap-2 max-h-72 overflow-y-auto p-2 border border-neutral-200 rounded-2xl scrollbar-none bg-neutral-50/50">
+                    <template x-for="icon in categoryIcons()" :key="icon">
+                        <button type="button" @click="formCategory.icon = icon" :aria-label="'Ikon ' + icon.replace('fa-', '').replace(/-/g, ' ')" :aria-pressed="formCategory.icon === icon"
+                                class="h-11 rounded-xl flex items-center justify-center border text-sm transition-all active:scale-95"
+                                :class="formCategory.icon === icon ? 'bg-[#800020] text-white border-[#800020] shadow-sm' : 'bg-white text-neutral-600 border-neutral-200'">
+                            <i class="fa-solid" :class="icon"></i>
+                        </button>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Tombol Aksi -->
+            <div class="flex space-x-2.5 pt-2">
+                <button aria-label="Tutup" type="button" @click="closeModal('modal-add-category')" class="flex-1 bg-neutral-100 text-neutral-600 py-3 rounded-xl text-xs font-bold hover:bg-neutral-200 transition-colors">Batal</button>
+                <button type="submit" class="flex-1 bg-[#800020] text-white py-3 rounded-xl text-xs font-bold shadow-md shadow-[#800020]/20 hover:bg-[#600018] transition-colors">Simpan</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+    <!-- Modal Struk / Resi Transaksi -->
+    <div x-show="modals['modal-receipt']" x-cloak class="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-4"  x-dialog>
+        <div class="bg-white w-full max-w-xs rounded-3xl p-6 space-y-4 shadow-xl text-center app-bg" @click.outside="closeModal('modal-receipt')">
+            <div class="w-12 h-12 bg-red-50 text-red-900 rounded-full flex items-center justify-center mx-auto text-lg">
+                <i class="fa-solid fa-receipt"></i>
+            </div>
+            <div>
+                <h3 class="font-black text-red-900 text-sm">Detail Struk Transaksi</h3>
+                <p class="text-[10px] text-black-900 mt-0.5" x-text="selectedReceipt.date"></p>
+            </div>
+            <div class="bg-gray-50 p-3 rounded-2xl text-left space-y-2 text-xs">
+                <div class="flex justify-between"><span class="text-gray-400">Dompet:</span><span class="font-bold" x-text="txWalletLabel(selectedReceipt)"></span></div>
+                <div class="flex justify-between"><span class="text-gray-400">Kategori:</span><span class="font-bold" x-text="selectedReceipt.category"></span></div>
+                <div class="flex justify-between"><span class="text-gray-400">Keterangan:</span><span class="font-bold" x-text="selectedReceipt.description"></span></div>
+                <div class="flex justify-between border-t border-gray-200 pt-2"><span class="text-gray-400 font-bold">Jumlah:</span><span class="font-black text-red-900" x-text="txAmountText(selectedReceipt)"></span></div>
+            </div>
+            <button aria-label="Tutup" @click="closeModal('modal-receipt')" class="w-full bg-red-900 text-white py-2.5 rounded-xl text-xs font-bold shadow">Tutup</button>
+        </div>
+    </div>
+
+    <!-- SCRIPT UTAMA -->
+    <script src="assets/js/controllers/AppController.js"></script>
+</body>
+</html>
